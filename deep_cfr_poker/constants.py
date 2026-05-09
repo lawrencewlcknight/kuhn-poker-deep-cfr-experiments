@@ -1,0 +1,4 @@
+"""Shared constants for poker experiments."""
+
+KUHN_GAME_VALUE_PLAYER_0 = -1.0 / 18.0
+DEFAULT_EXPLOITABILITY_THRESHOLD = 0.05
