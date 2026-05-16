@@ -173,6 +173,8 @@ Compares the Experiment 2 baseline, `uniform_replay_linear_avg_exp2_baseline`, w
 
 ## Setup
 
+The package metadata requires Python 3.9 or newer (`requires-python = ">=3.9"` in `pyproject.toml`). The legacy Torch environment supplied for the notebooks was a Python 3.9 environment, so Python 3.9 remains the safest setup choice when reproducing those runs exactly.
+
 Create and activate a virtual environment. The repository contains a placeholder `venv/` directory, but the actual environment is not committed.
 
 ```bash
