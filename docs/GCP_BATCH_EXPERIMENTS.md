@@ -411,6 +411,12 @@ The script prints the Batch script before submission. Check that the upload line
 gsutil -m cp -r outputs "gs://your-project-id-kuhn-poker-results/smoke-exp1-.../"
 ```
 
+To see if the experiment is running, list the Batch jobs in the configured region:
+
+```bash
+gcloud batch jobs list --location "$REGION"
+```
+
 ---
 
 ## 8. Monitor a Batch job
