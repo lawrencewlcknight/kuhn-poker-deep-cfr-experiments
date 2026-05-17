@@ -15,6 +15,19 @@ venv/*
 # Experiment outputs
 outputs/*
 !outputs/.gitkeep
+cloud_outputs/
+chart_exports/
+
+# Heavy or scratch experiment artifacts
+*.pt
+*.pth
+*.npz
+*.log
+failed_seeds.json
+failed_runs.json
+checkpoints/
+snapshots/
+traces/
 
 # Jupyter
 .ipynb_checkpoints/
