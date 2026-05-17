@@ -433,6 +433,10 @@ Describe one job:
 gcloud batch jobs describe JOB_NAME --location "$REGION"
 ```
 
+After an experiment has completed, review this command's output to see how long
+the Batch job took to run. The `status.runDuration` field reports the time the
+job spent in the `RUNNING` state.
+
 Possible states include:
 
 - `QUEUED`
@@ -453,6 +457,18 @@ Copy outputs back to your local machine:
 mkdir -p cloud_outputs/JOB_NAME
 gcloud storage cp -r "$BUCKET/JOB_NAME/*" "cloud_outputs/JOB_NAME/"
 ```
+
+The downloaded directory is a scratch copy of the complete Batch output. To
+copy only lightweight thesis-facing artifacts such as figures, CSV tables, and
+aggregate summaries into the tracked repository tree, run:
+
+```bash
+python scripts/promote_thesis_artifacts.py cloud_outputs/JOB_NAME
+```
+
+This writes curated files under `thesis_artifacts/<experiment_name>/<run>/`.
+See [`docs/THESIS_ARTIFACTS.md`](THESIS_ARTIFACTS.md) for the full workflow,
+including dry-run and overwrite options.
 
 ---
 

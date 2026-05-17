@@ -369,6 +369,10 @@ with a uniform layout:
 - `checkpoints/` and `snapshots/` subdirectories where applicable
 
 Naming and layout are governed by the contract in [`docs/OUTPUT_CONVENTIONS.md`](docs/OUTPUT_CONVENTIONS.md).
+Use [`scripts/promote_thesis_artifacts.py`](scripts/promote_thesis_artifacts.py)
+to copy only lightweight thesis-facing figures, tables, and summaries from
+downloaded cloud outputs into the tracked `thesis_artifacts/` tree. The workflow
+is documented in [`docs/THESIS_ARTIFACTS.md`](docs/THESIS_ARTIFACTS.md).
 
 ## Academic interpretation
 
