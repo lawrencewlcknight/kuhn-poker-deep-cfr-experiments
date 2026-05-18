@@ -86,8 +86,11 @@ Generated PNGs:
 | --- | --- |
 | `exploitability_by_iteration.png` | Mean exploitability curves by reinitialisation setting. |
 | `exploitability_by_nodes.png` | Mean exploitability by nodes touched. |
+| `average_policy_value_by_iteration.png` | Mean average-policy value curves by reinitialisation setting. |
+| `average_policy_value_by_nodes.png` | Mean average-policy value by nodes touched. |
 | `policy_value_error_by_iteration.png` | Mean policy-value error from the known Kuhn value. |
 | `final_exploitability_by_variant.png` | Final exploitability bar chart. |
+| `final_average_policy_value_by_variant.png` | Final average-policy value bar chart. |
 | `best_exploitability_by_variant.png` | Best exploitability bar chart. |
 | `final_window_exploitability_by_variant.png` | Final-window mean exploitability bar chart. |
 | `exploitability_auc_by_variant.png` | Normalised exploitability AUC bar chart. |
@@ -101,4 +104,3 @@ Generated PNGs:
 Exploitability is the primary strategic metric. Losses, gradient norms, entropy,
 and advantage-target variance are diagnostics for interpreting why one
 advantage-network training regime may be more stable than the other.
-

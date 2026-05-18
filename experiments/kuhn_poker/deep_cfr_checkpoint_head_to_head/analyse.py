@@ -280,11 +280,14 @@ def run_analysis(
     write_dict_rows_csv(strength_dict_rows, strength_csv)
 
     aggregate_rows = aggregate_strength(strength_rows)
-    # Add aggregated exploitability columns for convenience.
+    # Add aggregated policy-quality columns for convenience.
     expl_lookup: Dict[int, List[float]] = defaultdict(list)
+    avg_value_lookup: Dict[int, List[float]] = defaultdict(list)
     for m in metrics:
         if np.isfinite(m.exploitability):
             expl_lookup[m.checkpoint].append(m.exploitability)
+        if np.isfinite(m.average_policy_value):
+            avg_value_lookup[m.checkpoint].append(m.average_policy_value)
     for row in aggregate_rows:
         ckpt = int(row["checkpoint"])
         values = np.asarray(expl_lookup.get(ckpt, []), dtype=np.float64)
@@ -292,6 +295,15 @@ def run_analysis(
             float(np.mean(values)) if values.size else float("nan")
         )
         row["exploitability_sem"] = (
+            float(np.std(values, ddof=1) / np.sqrt(values.size))
+            if values.size > 1
+            else 0.0 if values.size == 1 else float("nan")
+        )
+        values = np.asarray(avg_value_lookup.get(ckpt, []), dtype=np.float64)
+        row["average_policy_value_mean"] = (
+            float(np.mean(values)) if values.size else float("nan")
+        )
+        row["average_policy_value_sem"] = (
             float(np.std(values, ddof=1) / np.sqrt(values.size))
             if values.size > 1
             else 0.0 if values.size == 1 else float("nan")
@@ -418,7 +430,24 @@ def run_analysis(
         title="Checkpoint exploitability over training",
         xlabel="Checkpoint iteration",
         ylabel="Exploitability",
-        zero_line=False,
+        reference_line_label="Nash equilibrium target",
+    )
+    plot_strength_curve_with_errorbars(
+        iterations_for_plot,
+        [
+            aggregate_lookup[i].get("average_policy_value_mean", float("nan"))
+            for i in iterations_for_plot
+        ],
+        [
+            aggregate_lookup[i].get("average_policy_value_sem", float("nan"))
+            for i in iterations_for_plot
+        ],
+        output_path=run_dir / "average_policy_value_by_checkpoint.png",
+        title="Checkpoint average policy value over training",
+        xlabel="Checkpoint iteration",
+        ylabel="Average policy value for player 0",
+        reference_line_value=float(config.get("average_policy_value_target", -1.0 / 18.0)),
+        reference_line_label="Player 0 Nash value",
     )
 
     plot_scatter_annotated(
@@ -432,6 +461,22 @@ def run_analysis(
         title="Equilibrium quality versus head-to-head strength",
         xlabel="Exploitability",
         ylabel="Mean EV vs all other checkpoints",
+    )
+    plot_scatter_annotated(
+        [row["average_policy_value"] for row in strength_dict_rows],
+        [row["mean_EV_vs_all_other_checkpoints"] for row in strength_dict_rows],
+        [
+            f"{row['seed']}:{int(row['checkpoint'])}"
+            for row in strength_dict_rows
+        ],
+        output_path=run_dir / "strength_vs_average_policy_value.png",
+        title="Average policy value versus head-to-head strength",
+        xlabel="Average policy value for player 0",
+        ylabel="Mean EV vs all other checkpoints",
+        x_reference_line_value=float(
+            config.get("average_policy_value_target", -1.0 / 18.0)
+        ),
+        x_reference_line_label="Player 0 Nash value",
     )
 
     # ---------------- optional Monte Carlo ----------------

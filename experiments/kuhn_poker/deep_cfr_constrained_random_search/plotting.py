@@ -5,7 +5,7 @@ from __future__ import annotations
 import warnings
 from collections import defaultdict
 from pathlib import Path
-from typing import Mapping, Sequence
+from typing import Mapping, Optional, Sequence
 
 import matplotlib
 
@@ -44,8 +44,43 @@ def _barh_final_exploitability(rows, run_dir: Path, filename: str, title: str, t
 
     fig, ax = plt.subplots(figsize=(9, max(4, 0.45 * len(labels) + 1.5)))
     ax.barh(labels, means, xerr=ses, capsize=3, alpha=0.85)
-    ax.axvline(threshold, linestyle="--", label="Exploitability threshold")
+    ax.axvline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Mean final exploitability")
+    ax.set_title(title)
+    ax.grid(True, axis="x")
+    ax.legend()
+    fig.tight_layout()
+    path = run_dir / filename
+    fig.savefig(path, dpi=200, bbox_inches="tight")
+    plt.close(fig)
+    return path
+
+
+def _barh_final_average_policy_value(
+    rows,
+    run_dir: Path,
+    filename: str,
+    title: str,
+    target: float,
+):
+    if not rows:
+        return None
+    ordered = sorted(
+        rows,
+        key=lambda row: (
+            float(row.get("final_policy_value_mean", np.inf)),
+            str(row["config_label"]),
+        ),
+        reverse=True,
+    )
+    labels = [row["config_label"] for row in ordered]
+    means = [float(row.get("final_policy_value_mean", np.nan)) for row in ordered]
+    ses = [float(row.get("final_policy_value_se", 0.0)) for row in ordered]
+
+    fig, ax = plt.subplots(figsize=(9, max(4, 0.45 * len(labels) + 1.5)))
+    ax.barh(labels, means, xerr=ses, capsize=3, alpha=0.85)
+    ax.axvline(target, linestyle="--", label="Player 0 Nash value")
+    ax.set_xlabel("Mean final average policy value for player 0")
     ax.set_title(title)
     ax.grid(True, axis="x")
     ax.legend()
@@ -77,7 +112,8 @@ def _plot_curve(
     ylabel: str,
     title: str,
     filename: str,
-    threshold: float | None = None,
+    threshold: Optional[float] = None,
+    threshold_label: str = "Nash equilibrium target",
 ):
     grouped = _curve_groups(curve_rows, stage)
     if not grouped:
@@ -102,7 +138,7 @@ def _plot_curve(
         ax.plot(x_arr, mean_arr, linewidth=2, label=label)
         ax.fill_between(x_arr, mean_arr - se_arr, mean_arr + se_arr, alpha=0.15)
     if threshold is not None:
-        ax.axhline(threshold, linestyle="--", label="Exploitability threshold")
+        ax.axhline(threshold, linestyle="--", label=threshold_label)
     ax.set_xlabel(x_key.replace("_", " ").title())
     ax.set_ylabel(ylabel)
     ax.set_title(title)
@@ -123,6 +159,7 @@ def plot_random_search(
     curve_rows: Sequence[Mapping[str, object]],
     paired_rows: Sequence[Mapping[str, object]],
     exploitability_threshold: float,
+    average_policy_value_target: float,
 ) -> list[Path]:
     run_dir = Path(run_dir)
     paths = []
@@ -139,12 +176,32 @@ def plot_random_search(
         if path:
             paths.append(path)
 
+        path = _barh_final_average_policy_value(
+            screening_config_summary,
+            run_dir,
+            "screening_final_average_policy_value_by_config.png",
+            "Screening Stage: Mean Final Average Policy Value",
+            average_policy_value_target,
+        )
+        if path:
+            paths.append(path)
+
         path = _barh_final_exploitability(
             confirmation_config_summary,
             run_dir,
             "confirmation_final_exploitability_by_config.png",
             "Confirmation Stage: Mean Final Exploitability",
             exploitability_threshold,
+        )
+        if path:
+            paths.append(path)
+
+        path = _barh_final_average_policy_value(
+            confirmation_config_summary,
+            run_dir,
+            "confirmation_final_average_policy_value_by_config.png",
+            "Confirmation Stage: Mean Final Average Policy Value",
+            average_policy_value_target,
         )
         if path:
             paths.append(path)
@@ -159,7 +216,31 @@ def plot_random_search(
                 ylabel="Exploitability (NashConv/2)",
                 title="Confirmation Stage: Exploitability Curves",
                 filename="confirmation_exploitability_by_iteration.png",
-                threshold=exploitability_threshold,
+                threshold=0.0,
+            ),
+            _plot_curve(
+                curve_rows,
+                run_dir,
+                stage="confirmation",
+                y_key="average_policy_value",
+                x_key="iteration",
+                ylabel="Average policy value for player 0",
+                title="Confirmation Stage: Average Policy Value Curves",
+                filename="confirmation_average_policy_value_by_iteration.png",
+                threshold=average_policy_value_target,
+                threshold_label="Player 0 Nash value",
+            ),
+            _plot_curve(
+                curve_rows,
+                run_dir,
+                stage="confirmation",
+                y_key="average_policy_value",
+                x_key="nodes_touched",
+                ylabel="Average policy value for player 0",
+                title="Confirmation Stage: Average Policy Value by Nodes Touched",
+                filename="confirmation_average_policy_value_by_nodes.png",
+                threshold=average_policy_value_target,
+                threshold_label="Player 0 Nash value",
             ),
             _plot_curve(
                 curve_rows,
@@ -170,7 +251,7 @@ def plot_random_search(
                 ylabel="Exploitability (NashConv/2)",
                 title="Confirmation Stage: Exploitability by Nodes Touched",
                 filename="confirmation_exploitability_by_nodes.png",
-                threshold=exploitability_threshold,
+                threshold=0.0,
             ),
             _plot_curve(
                 curve_rows,

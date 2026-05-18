@@ -70,6 +70,8 @@ def test_train_then_analyse_creates_expected_artifacts(tmp_path):
         "head_to_head_seed_win_fraction.png",
         "head_to_head_strength_vs_earlier.png",
         "exploitability_by_checkpoint.png",
+        "average_policy_value_by_checkpoint.png",
+        "strength_vs_average_policy_value.png",
     ):
         assert (tmp_path / png_name).exists(), png_name
 

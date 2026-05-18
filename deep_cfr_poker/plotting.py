@@ -9,7 +9,7 @@ produces a blank or all-NaN figure.
 from __future__ import annotations
 
 from pathlib import Path
-from typing import Iterable, Sequence
+from typing import Iterable, Optional, Sequence
 
 import matplotlib
 
@@ -19,7 +19,10 @@ import matplotlib.pyplot as plt  # noqa: E402  (needs the backend set first)
 import numpy as np  # noqa: E402
 from scipy import stats  # noqa: E402
 
-from .constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from .constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 def _pad_to_length(arr: np.ndarray, length: int) -> np.ndarray:
@@ -59,6 +62,7 @@ def plot_multiseed_results(
     results: Sequence[dict],
     run_dir,
     exploitability_threshold: float = DEFAULT_EXPLOITABILITY_THRESHOLD,
+    average_policy_value_target: float = DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
 ) -> None:
     """Creates the standard plots for a multi-seed Kuhn poker Deep CFR run."""
     if not results:
@@ -69,11 +73,14 @@ def plot_multiseed_results(
 
     iterations = np.asarray(results[0]["iterations"], dtype=np.float64)
     exploitability_mat = _stack_curve(results, "exploitability")
+    average_policy_value_mat = _stack_curve(results, "average_policy_value")
     value_error_mat = _stack_curve(results, "policy_value_error")
     nodes_mat = _stack_curve(results, "nodes_touched")
 
     mean_exploitability = np.nanmean(exploitability_mat, axis=0)
     se_exploitability = _sem(exploitability_mat)
+    mean_average_policy_value = np.nanmean(average_policy_value_mat, axis=0)
+    se_average_policy_value = _sem(average_policy_value_mat)
     mean_value_error = np.nanmean(value_error_mat, axis=0)
     se_value_error = _sem(value_error_mat)
     mean_nodes = np.nanmean(nodes_mat, axis=0)
@@ -104,7 +111,7 @@ def plot_multiseed_results(
         alpha=0.2,
         label="Mean ± s.e.",
     )
-    ax.axhline(exploitability_threshold, linestyle="--", label="Exploitability threshold")
+    ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Training iteration")
     ax.set_ylabel("Exploitability (NashConv/2)")
     ax.set_title("Kuhn Poker Deep CFR: Exploitability Across Seeds")
@@ -135,7 +142,7 @@ def plot_multiseed_results(
         alpha=0.2,
         label="Mean ± s.e.",
     )
-    ax.axhline(exploitability_threshold, linestyle="--", label="Exploitability threshold")
+    ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Nodes touched")
     ax.set_ylabel("Exploitability (NashConv/2)")
     ax.set_title("Kuhn Poker Deep CFR: Exploitability by Nodes Touched")
@@ -144,6 +151,76 @@ def plot_multiseed_results(
     fig.tight_layout()
     fig.savefig(
         run_dir / "exploitability_by_nodes_multiseed.png", dpi=200, bbox_inches="tight"
+    )
+    plt.close(fig)
+
+    # Average policy value against training iteration.
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for result in results:
+        ax.plot(
+            result["iterations"],
+            result["average_policy_value"],
+            alpha=0.25,
+            linewidth=1,
+        )
+    ax.plot(iterations, mean_average_policy_value, linewidth=2, label="Mean across seeds")
+    ax.fill_between(
+        iterations,
+        mean_average_policy_value - se_average_policy_value,
+        mean_average_policy_value + se_average_policy_value,
+        alpha=0.2,
+        label="Mean ± s.e.",
+    )
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        label="Player 0 Nash value",
+    )
+    ax.set_xlabel("Training iteration")
+    ax.set_ylabel("Average policy value for player 0")
+    ax.set_title("Kuhn Poker Deep CFR: Average Policy Value Across Seeds")
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(
+        run_dir / "average_policy_value_by_iteration_multiseed.png",
+        dpi=200,
+        bbox_inches="tight",
+    )
+    plt.close(fig)
+
+    # Average policy value against nodes touched.
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for result in results:
+        ax.plot(
+            result["nodes_touched"],
+            result["average_policy_value"],
+            alpha=0.25,
+            linewidth=1,
+        )
+    ax.plot(mean_nodes, mean_average_policy_value, linewidth=2, label="Mean across seeds")
+    ax.fill_between(
+        mean_nodes,
+        mean_average_policy_value - se_average_policy_value,
+        mean_average_policy_value + se_average_policy_value,
+        alpha=0.2,
+        label="Mean ± s.e.",
+    )
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        label="Player 0 Nash value",
+    )
+    ax.set_xlabel("Nodes touched")
+    ax.set_ylabel("Average policy value for player 0")
+    ax.set_title("Kuhn Poker Deep CFR: Average Policy Value by Nodes Touched")
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(
+        run_dir / "average_policy_value_by_nodes_multiseed.png",
+        dpi=200,
+        bbox_inches="tight",
     )
     plt.close(fig)
 
@@ -342,6 +419,8 @@ def plot_strength_curve_with_errorbars(
     xlabel: str,
     ylabel: str,
     zero_line: bool = True,
+    reference_line_value: float = 0.0,
+    reference_line_label: Optional[str] = None,
     figsize: Sequence[float] = (9, 5),
 ) -> None:
     """Generic mean-with-error-bar plot used for cross-seed strength summaries."""
@@ -352,11 +431,18 @@ def plot_strength_curve_with_errorbars(
     fig, ax = plt.subplots(figsize=figsize)
     ax.errorbar(x, means, yerr=sems, marker="o", capsize=3)
     if zero_line:
-        ax.axhline(0.0, linestyle="--", linewidth=1)
+        ax.axhline(
+            reference_line_value,
+            linestyle="--",
+            linewidth=1,
+            label=reference_line_label,
+        )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     ax.grid(True, alpha=0.3)
+    if reference_line_label:
+        ax.legend()
     fig.tight_layout()
     fig.savefig(output_path, dpi=200, bbox_inches="tight")
     plt.close(fig)
@@ -372,6 +458,8 @@ def plot_scatter_annotated(
     xlabel: str,
     ylabel: str,
     zero_line: bool = True,
+    x_reference_line_value: Optional[float] = None,
+    x_reference_line_label: Optional[str] = None,
     figsize: Sequence[float] = (7, 5),
 ) -> None:
     """Annotated scatter plot used for strength-vs-exploitability views."""
@@ -384,10 +472,19 @@ def plot_scatter_annotated(
         ax.annotate(str(label), (x, y), fontsize=7, alpha=0.7)
     if zero_line:
         ax.axhline(0.0, linestyle="--", linewidth=1)
+    if x_reference_line_value is not None:
+        ax.axvline(
+            x_reference_line_value,
+            linestyle="--",
+            linewidth=1,
+            label=x_reference_line_label,
+        )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
     ax.set_title(title)
     ax.grid(True, alpha=0.3)
+    if x_reference_line_label:
+        ax.legend()
     fig.tight_layout()
     fig.savefig(output_path, dpi=200, bbox_inches="tight")
     plt.close(fig)

@@ -603,6 +603,9 @@ def main() -> int:
         export_info["paired_rows"],
         run_dir,
         warm_start_boundary=int(config["warm_start_boundary"]),
+        average_policy_value_target=float(
+            config.get("average_policy_value_target", -1.0 / 18.0)
+        ),
     )
 
     _LOGGER.info("Completed %d/%d arm runs", len(results), len(seeds) * 2)
@@ -617,4 +620,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

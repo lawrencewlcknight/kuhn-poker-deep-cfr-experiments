@@ -95,6 +95,8 @@ Generated PNGs:
 | --- | --- |
 | `exploitability_by_iteration.png` | Baseline and warm-start exploitability curves. |
 | `exploitability_by_nodes.png` | Exploitability by nodes touched. |
+| `average_policy_value_by_iteration.png` | Baseline and warm-start average-policy value curves. |
+| `average_policy_value_by_nodes.png` | Average-policy value by nodes touched. |
 | `policy_value_error_by_iteration.png` | Policy-value error from the known Kuhn value. |
 | `paired_delta_exploitability_warm_minus_baseline.png` | Paired exploitability difference over training. |
 | `paired_difference_summary_bar_chart.png` | Mean paired differences for final, best, and AUC metrics. |
@@ -102,4 +104,3 @@ Generated PNGs:
 Exploitability is the primary strategic metric. A large paired difference is
 evidence that the checkpoint/resume mechanism changes the learning process,
 not evidence that the warm-start arm received extra training.
-

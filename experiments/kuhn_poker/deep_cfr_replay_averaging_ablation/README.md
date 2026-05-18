@@ -68,7 +68,10 @@ Figures:
 
 - `exploitability_by_iteration.png`
 - `exploitability_by_nodes.png`
+- `average_policy_value_by_iteration.png`
+- `average_policy_value_by_nodes.png`
 - `final_exploitability_by_variant.png`
+- `final_average_policy_value_by_variant.png`
 - `paired_deltas_vs_baseline.png`
 - `policy_value_error_by_iteration.png`
 - `advantage_target_variance_diagnostic.png`
@@ -83,4 +86,3 @@ improved over the uniform-replay, linear-average baseline for the same seed.
 Priority effective sample size, target variance, policy loss, and policy entropy
 are mechanism diagnostics and should be reported separately from strategic
 quality.
-

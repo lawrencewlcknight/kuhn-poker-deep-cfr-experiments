@@ -548,6 +548,9 @@ def main() -> int:
         variants=config["ablation_variants"],
         baseline_variant_id=str(config["baseline_variant_id"]),
         exploitability_threshold=float(config["exploitability_threshold"]),
+        average_policy_value_target=float(
+            config.get("average_policy_value_target", -1.0 / 18.0)
+        ),
         aggregate_by_variant=export_info["aggregate_by_variant"],
         paired_rows=export_info["paired_rows"],
     )
@@ -568,4 +571,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

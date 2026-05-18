@@ -79,8 +79,11 @@ The run directory follows `docs/OUTPUT_CONVENTIONS.md`:
 - PNG plots:
   - `exploitability_by_iteration.png`
   - `exploitability_by_nodes.png`
+  - `average_policy_value_by_iteration.png`
+  - `average_policy_value_by_nodes.png`
   - `policy_value_error_by_iteration.png`
   - `final_exploitability_by_variant.png`
+  - `final_average_policy_value_by_variant.png`
   - `paired_deltas_vs_baseline.png`
   - `processed_target_variance.png`
   - `policy_loss_diagnostic.png`

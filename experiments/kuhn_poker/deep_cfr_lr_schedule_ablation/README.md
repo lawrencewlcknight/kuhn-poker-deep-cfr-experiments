@@ -80,8 +80,11 @@ The run directory follows `docs/OUTPUT_CONVENTIONS.md`:
   - `learning_rates.png`
   - `exploitability_by_iteration.png`
   - `exploitability_by_nodes.png`
+  - `average_policy_value_by_iteration.png`
+  - `average_policy_value_by_nodes.png`
   - `policy_value_error_by_iteration.png`
   - `final_exploitability_by_schedule.png`
+  - `final_average_policy_value_by_schedule.png`
   - `delta_final_exploitability_vs_baseline.png`
   - `policy_loss_diagnostic.png`
   - `advantage_target_variance_diagnostic.png`

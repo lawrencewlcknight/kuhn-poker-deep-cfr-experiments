@@ -6,7 +6,10 @@ baseline with cosine decay to 10% of the initial rate under matched seeds and
 the same Deep CFR training budget.
 """
 
-from deep_cfr_poker.constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from deep_cfr_poker.constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 SCHEDULE_CONFIGS = [
@@ -71,9 +74,9 @@ DEFAULT_CONFIG = {
     "policy_training_mode": "intermittent",
     "final_policy_network_train_steps": None,
     "compute_exploitability": True,
+    "average_policy_value_target": DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": DEFAULT_EXPLOITABILITY_THRESHOLD,
     "schedule_configs": tuple(SCHEDULE_CONFIGS),
     "optional_extra_schedules": tuple(OPTIONAL_EXTRA_SCHEDULES),
     "baseline_schedule": BASELINE_SCHEDULE,
 }
-

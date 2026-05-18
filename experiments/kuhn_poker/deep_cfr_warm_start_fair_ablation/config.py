@@ -7,7 +7,10 @@ network architecture, optimiser settings, replay buffers, policy-training
 frequency, evaluation interval, and solver implementation.
 """
 
-from deep_cfr_poker.constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from deep_cfr_poker.constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 ARMS = [
@@ -46,7 +49,7 @@ DEFAULT_CONFIG = {
     "policy_training_mode": "intermittent",
     "final_policy_network_train_steps": None,
     "compute_exploitability": True,
+    "average_policy_value_target": DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": DEFAULT_EXPLOITABILITY_THRESHOLD,
     "arms": tuple(ARMS),
 }
-

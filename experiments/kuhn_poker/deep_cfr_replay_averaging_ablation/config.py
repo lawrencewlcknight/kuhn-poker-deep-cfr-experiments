@@ -6,7 +6,10 @@ The baseline arm matches Experiment 2: uniform replay and CFR-style linear
 average-strategy weighting.
 """
 
-from deep_cfr_poker.constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from deep_cfr_poker.constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 REPLAY_AVERAGING_VARIANTS = [
@@ -76,6 +79,7 @@ DEFAULT_CONFIG = {
     "policy_training_mode": "intermittent",
     "final_policy_network_train_steps": None,
     "compute_exploitability": True,
+    "average_policy_value_target": DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": DEFAULT_EXPLOITABILITY_THRESHOLD,
     "advantage_replay_sampling": "uniform",
     "average_strategy_weighting": "linear",
@@ -84,4 +88,3 @@ DEFAULT_CONFIG = {
     "ablation_variants": tuple(REPLAY_AVERAGING_VARIANTS),
     "baseline_variant_id": BASELINE_VARIANT_ID,
 }
-

@@ -6,7 +6,10 @@ fixed at 25 CFR iterations for every ablation arm so exploitability and
 diagnostic curves are measured at identical checkpoints.
 """
 
-from deep_cfr_poker.constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from deep_cfr_poker.constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 POLICY_TRAIN_EVERY_VARIANTS = [10, 25, 50, 100]
@@ -33,6 +36,6 @@ DEFAULT_CONFIG = {
     "policy_network_train_steps": 200,
     "advantage_network_train_steps": 200,
     "compute_exploitability": True,
+    "average_policy_value_target": DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": DEFAULT_EXPLOITABILITY_THRESHOLD,
 }
-

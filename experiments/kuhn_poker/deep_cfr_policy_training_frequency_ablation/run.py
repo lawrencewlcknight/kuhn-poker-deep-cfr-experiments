@@ -392,6 +392,9 @@ def main() -> int:
         variants=config["policy_train_every_variants"],
         reference_variant=config["reference_policy_train_every"],
         exploitability_threshold=config["exploitability_threshold"],
+        average_policy_value_target=float(
+            config.get("average_policy_value_target", -1.0 / 18.0)
+        ),
         aggregate_by_variant=export_info["aggregate_by_variant"],
     )
 

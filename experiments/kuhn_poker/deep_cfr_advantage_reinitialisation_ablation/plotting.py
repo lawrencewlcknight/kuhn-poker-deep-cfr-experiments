@@ -62,6 +62,7 @@ def plot_advantage_reinitialisation_ablation(
     reference_variant_id: str,
     comparison_variant_id: str,
     exploitability_threshold: float,
+    average_policy_value_target: float,
     aggregate_by_variant: dict,
 ) -> None:
     if not results:
@@ -91,7 +92,7 @@ def plot_advantage_reinitialisation_ablation(
             )
         ax.plot(iterations, mean, linewidth=2, color=colours.get(variant_id), label=labels[variant_id])
         ax.fill_between(iterations, mean - se, mean + se, alpha=0.18, color=colours.get(variant_id))
-    ax.axhline(exploitability_threshold, linestyle="--", color="black", linewidth=1, label="Exploitability threshold")
+    ax.axhline(0.0, linestyle="--", color="black", linewidth=1, label="Nash equilibrium target")
     ax.set_xlabel("Training iteration")
     ax.set_ylabel("Exploitability (NashConv/2)")
     ax.set_title("Advantage-Network Reinitialisation Ablation")
@@ -108,7 +109,7 @@ def plot_advantage_reinitialisation_ablation(
         nodes_mean, _ = _mean_and_se(_stack(subset, "nodes_touched"))
         ax.plot(nodes_mean, exp_mean, linewidth=2, color=colours.get(variant_id), label=labels[variant_id])
         ax.fill_between(nodes_mean, exp_mean - exp_se, exp_mean + exp_se, alpha=0.18, color=colours.get(variant_id))
-    ax.axhline(exploitability_threshold, linestyle="--", color="black", linewidth=1)
+    ax.axhline(0.0, linestyle="--", color="black", linewidth=1, label="Nash equilibrium target")
     ax.set_xlabel("Nodes touched")
     ax.set_ylabel("Exploitability (NashConv/2)")
     ax.set_title("Sample Efficiency by Reinitialisation Setting")
@@ -116,6 +117,71 @@ def plot_advantage_reinitialisation_ablation(
     ax.legend()
     fig.tight_layout()
     fig.savefig(run_dir / "exploitability_by_nodes.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for variant_id in variant_ids:
+        subset = _results_for_variant(results, variant_id)
+        mean, se = _mean_and_se(_stack(subset, "average_policy_value"))
+        for result in subset:
+            ax.plot(
+                result["iterations"],
+                result["average_policy_value"],
+                alpha=0.12,
+                linewidth=1,
+                color=colours.get(variant_id),
+            )
+        ax.plot(
+            iterations,
+            mean,
+            linewidth=2,
+            color=colours.get(variant_id),
+            label=labels[variant_id],
+        )
+        ax.fill_between(
+            iterations,
+            mean - se,
+            mean + se,
+            alpha=0.18,
+            color=colours.get(variant_id),
+        )
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        color="black",
+        linewidth=1,
+        label="Player 0 Nash value",
+    )
+    ax.set_xlabel("Training iteration")
+    ax.set_ylabel("Average policy value for player 0")
+    ax.set_title("Average Policy Value by Reinitialisation Setting")
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(run_dir / "average_policy_value_by_iteration.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for variant_id in variant_ids:
+        subset = _results_for_variant(results, variant_id)
+        value_mean, value_se = _mean_and_se(_stack(subset, "average_policy_value"))
+        nodes_mean, _ = _mean_and_se(_stack(subset, "nodes_touched"))
+        ax.plot(nodes_mean, value_mean, linewidth=2, color=colours.get(variant_id), label=labels[variant_id])
+        ax.fill_between(nodes_mean, value_mean - value_se, value_mean + value_se, alpha=0.18, color=colours.get(variant_id))
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        color="black",
+        linewidth=1,
+        label="Player 0 Nash value",
+    )
+    ax.set_xlabel("Nodes touched")
+    ax.set_ylabel("Average policy value for player 0")
+    ax.set_title("Average Policy Value by Nodes Touched")
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(run_dir / "average_policy_value_by_nodes.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(8, 5))
@@ -139,6 +205,7 @@ def plot_advantage_reinitialisation_ablation(
         ("best_exploitability", "Best Exploitability", "best_exploitability_by_variant.png"),
         ("final_window_mean_exploitability", "Final-Window Mean Exploitability", "final_window_exploitability_by_variant.png"),
         ("exploitability_auc_by_iteration", "Normalised Exploitability AUC", "exploitability_auc_by_variant.png"),
+        ("final_policy_value", "Final Average Policy Value", "final_average_policy_value_by_variant.png"),
     ):
         means = [
             _summary_stat(aggregate_by_variant, variant_id, metric, "mean")
@@ -152,9 +219,18 @@ def plot_advantage_reinitialisation_ablation(
         ax.bar(x_pos, means, yerr=ses, capsize=4)
         ax.set_xticks(x_pos)
         ax.set_xticklabels(x_labels)
+        if metric == "final_policy_value":
+            ax.axhline(
+                average_policy_value_target,
+                linestyle="--",
+                label="Player 0 Nash value",
+            )
+        else:
+            ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
         ax.set_ylabel(metric)
         ax.set_title(title)
         ax.grid(True, axis="y")
+        ax.legend()
         fig.tight_layout()
         fig.savefig(run_dir / filename, dpi=200, bbox_inches="tight")
         plt.close(fig)

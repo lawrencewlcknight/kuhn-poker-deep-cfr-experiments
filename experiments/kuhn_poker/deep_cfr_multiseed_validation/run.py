@@ -209,6 +209,9 @@ def main() -> int:
         results,
         run_dir,
         exploitability_threshold=config["exploitability_threshold"],
+        average_policy_value_target=float(
+            config.get("average_policy_value_target", -1.0 / 18.0)
+        ),
     )
 
     _LOGGER.info("Completed %d/%d seeds", len(results), len(seeds))

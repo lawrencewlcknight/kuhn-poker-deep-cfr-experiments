@@ -30,3 +30,5 @@ python -m experiments.kuhn_poker.deep_cfr_multiseed_validation.run   --seeds 123
 ```
 
 The experiment writes a timestamped directory containing CSV, JSON, NPZ, and PNG outputs.
+The headline PNGs include exploitability, average policy value, and policy-value
+error curves by iteration / nodes touched.

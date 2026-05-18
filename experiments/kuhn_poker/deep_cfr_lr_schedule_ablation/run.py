@@ -584,6 +584,9 @@ def main() -> int:
         schedules=config["schedule_configs"],
         baseline_schedule=str(config["baseline_schedule"]),
         exploitability_threshold=float(config["exploitability_threshold"]),
+        average_policy_value_target=float(
+            config.get("average_policy_value_target", -1.0 / 18.0)
+        ),
         aggregate_by_schedule=export_info["aggregate_by_schedule"],
         paired_rows=export_info["paired_rows"],
     )

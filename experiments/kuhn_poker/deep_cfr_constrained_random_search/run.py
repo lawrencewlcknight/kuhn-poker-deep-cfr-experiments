@@ -593,6 +593,7 @@ def export_search_npz(results: Sequence[dict], run_dir: Path) -> Path:
             for key in (
                 "iterations",
                 "exploitability",
+                "average_policy_value",
                 "policy_value_error",
                 "nodes_touched",
                 "wall_clock_seconds",
@@ -730,6 +731,9 @@ def export_search_results(
         curve_rows=curve_rows,
         paired_rows=paired_rows,
         exploitability_threshold=float(config["exploitability_threshold"]),
+        average_policy_value_target=float(
+            config.get("average_policy_value_target", -1.0 / 18.0)
+        ),
     )
 
     metadata_path = write_experiment_metadata(

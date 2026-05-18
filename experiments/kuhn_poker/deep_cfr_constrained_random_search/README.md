@@ -72,9 +72,13 @@ The run directory follows `docs/OUTPUT_CONVENTIONS.md`:
   curves.
 - PNG plots:
   - `screening_final_exploitability_by_config.png`
+  - `screening_final_average_policy_value_by_config.png`
   - `confirmation_final_exploitability_by_config.png`
+  - `confirmation_final_average_policy_value_by_config.png`
   - `confirmation_exploitability_by_iteration.png`
   - `confirmation_exploitability_by_nodes.png`
+  - `confirmation_average_policy_value_by_iteration.png`
+  - `confirmation_average_policy_value_by_nodes.png`
   - `confirmation_policy_value_error_by_iteration.png`
   - `confirmation_paired_difference_vs_baseline.png`
 

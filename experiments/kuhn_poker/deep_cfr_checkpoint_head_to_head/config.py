@@ -12,7 +12,10 @@ configuration. To compare against alternative solver settings, fork this file
 into a separate experiment package rather than mutating this one.
 """
 
-from deep_cfr_poker.constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from deep_cfr_poker.constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 # Filenames in this experiment's output directory follow the same snake_case
@@ -66,6 +69,7 @@ DEFAULT_CONFIG = {
     "policy_network_train_steps": 200,
     "advantage_network_train_steps": 200,
     "compute_exploitability": True,
+    "average_policy_value_target": DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": DEFAULT_EXPLOITABILITY_THRESHOLD,
     # Analysis options.
     "equivalence_epsilon": DEFAULT_EQUIVALENCE_EPSILON,

@@ -6,7 +6,10 @@ differences can be attributed to warm-starting versus resetting the advantage
 networks before each advantage-network training phase.
 """
 
-from deep_cfr_poker.constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from deep_cfr_poker.constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 ABLATION_VARIANTS = [
@@ -49,9 +52,9 @@ DEFAULT_CONFIG = {
     "policy_training_mode": "intermittent",
     "final_policy_network_train_steps": None,
     "compute_exploitability": True,
+    "average_policy_value_target": DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": DEFAULT_EXPLOITABILITY_THRESHOLD,
     "ablation_variants": tuple(ABLATION_VARIANTS),
     "reference_variant_id": REFERENCE_VARIANT_ID,
     "comparison_variant_id": COMPARISON_VARIANT_ID,
 }
-

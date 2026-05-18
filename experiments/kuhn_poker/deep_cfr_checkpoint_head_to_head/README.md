@@ -69,7 +69,7 @@ The run directory contains every artefact a thesis chapter needs.
 | `head_to_head_seed_win_fraction_matrix.csv` | Fraction of seeds for which row checkpoint clearly beats column checkpoint. |
 | `head_to_head_monotonicity_by_seed.csv` | Per-seed monotonicity statistics. |
 | `head_to_head_strength_by_checkpoint.csv` | Per-(seed, checkpoint) head-to-head strength columns, joined with exploitability. |
-| `head_to_head_strength_aggregate.csv` | Across-seed mean / SE per checkpoint, plus exploitability mean / SE. |
+| `head_to_head_strength_aggregate.csv` | Across-seed mean / SE per checkpoint, plus exploitability and average-policy-value mean / SE. |
 | `best_checkpoint_summary.csv` | Best checkpoint per seed under each criterion. |
 | `head_to_head_monte_carlo.csv` | Optional Monte Carlo validation rows (only when enabled). |
 | `head_to_head_mean_matrix.png` | Across-seed heatmap of pairwise EV. |
@@ -78,7 +78,9 @@ The run directory contains every artefact a thesis chapter needs.
 | `head_to_head_strength_vs_earlier.png` | Cross-seed mean EV vs all earlier checkpoints, with SE bars. |
 | `head_to_head_strength_vs_previous.png` | Adjacent-checkpoint improvement, with SE bars. |
 | `exploitability_by_checkpoint.png` | Mean exploitability per milestone, with SE bars. |
+| `average_policy_value_by_checkpoint.png` | Mean average-policy value per milestone, with SE bars. |
 | `strength_vs_exploitability.png` | Annotated scatter linking equilibrium quality and head-to-head strength. |
+| `strength_vs_average_policy_value.png` | Annotated scatter linking average-policy value and head-to-head strength. |
 | `checkpoints/seed_<seed>_iter_<iter>_full.pt` | Full Deep CFR checkpoint (resumable). |
 | `snapshots/seed_<seed>_iter_<iter>_snapshot.pt` | Lightweight policy snapshot. |
 

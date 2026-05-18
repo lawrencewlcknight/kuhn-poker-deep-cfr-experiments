@@ -478,6 +478,9 @@ def main() -> int:
         reference_variant_id=config["reference_variant_id"],
         comparison_variant_id=config["comparison_variant_id"],
         exploitability_threshold=config["exploitability_threshold"],
+        average_policy_value_target=float(
+            config.get("average_policy_value_target", -1.0 / 18.0)
+        ),
         aggregate_by_variant=export_info["aggregate_by_variant"],
     )
 
@@ -497,4 +500,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-

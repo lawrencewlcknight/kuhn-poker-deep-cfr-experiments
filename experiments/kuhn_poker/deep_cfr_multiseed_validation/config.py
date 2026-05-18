@@ -19,7 +19,10 @@ Anyone reading the solver in isolation should be aware that the experiment
 deliberately deviates from the library defaults along these axes.
 """
 
-from deep_cfr_poker.constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from deep_cfr_poker.constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 DEFAULT_CONFIG = {
@@ -38,6 +41,7 @@ DEFAULT_CONFIG = {
     "policy_network_train_steps": 200,
     "advantage_network_train_steps": 200,
     "compute_exploitability": True,
+    "average_policy_value_target": DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": DEFAULT_EXPLOITABILITY_THRESHOLD,
 }
 

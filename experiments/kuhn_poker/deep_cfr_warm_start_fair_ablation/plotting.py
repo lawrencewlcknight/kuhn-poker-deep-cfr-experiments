@@ -45,6 +45,7 @@ def plot_warm_start_fair_ablation(
     run_dir,
     *,
     warm_start_boundary: int,
+    average_policy_value_target: float,
 ) -> None:
     if not results:
         raise ValueError("No results to plot.")
@@ -68,6 +69,20 @@ def plot_warm_start_fair_ablation(
             "Exploitability (NashConv/2)",
             "Fair Warm-Start Ablation by Nodes Touched",
             "exploitability_by_nodes.png",
+            "nodes_touched",
+        ),
+        (
+            "average_policy_value",
+            "Average policy value for player 0",
+            "Fair Warm-Start Ablation: Average Policy Value",
+            "average_policy_value_by_iteration.png",
+            "iterations",
+        ),
+        (
+            "average_policy_value",
+            "Average policy value for player 0",
+            "Fair Warm-Start Ablation by Nodes Touched",
+            "average_policy_value_by_nodes.png",
             "nodes_touched",
         ),
         (
@@ -95,6 +110,15 @@ def plot_warm_start_fair_ablation(
                 linestyle=":",
                 linewidth=1,
                 label="Warm-start boundary",
+            )
+        if key == "exploitability":
+            ax.axhline(0.0, linestyle="--", linewidth=1, label="Nash equilibrium target")
+        elif key == "average_policy_value":
+            ax.axhline(
+                average_policy_value_target,
+                linestyle="--",
+                linewidth=1,
+                label="Player 0 Nash value",
             )
         ax.set_xlabel(x_key.replace("_", " ").title())
         ax.set_ylabel(ylabel)

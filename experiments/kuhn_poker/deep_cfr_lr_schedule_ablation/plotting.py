@@ -57,6 +57,7 @@ def plot_lr_schedule_ablation(
     schedules: Sequence[Mapping[str, object]],
     baseline_schedule: str,
     exploitability_threshold: float,
+    average_policy_value_target: float,
     aggregate_by_schedule: dict,
     paired_rows: Sequence[dict],
 ) -> None:
@@ -96,6 +97,20 @@ def plot_lr_schedule_ablation(
             "nodes_touched",
         ),
         (
+            "average_policy_value",
+            "Average policy value for player 0",
+            "Learning-Rate Schedule Ablation: Average Policy Value",
+            "average_policy_value_by_iteration.png",
+            "iterations",
+        ),
+        (
+            "average_policy_value",
+            "Average policy value for player 0",
+            "Learning-Rate Schedule Ablation by Nodes Touched",
+            "average_policy_value_by_nodes.png",
+            "nodes_touched",
+        ),
+        (
             "policy_value_error",
             r"$|v(\sigma)-(-1/18)|$",
             "Learning-Rate Schedule Ablation: Policy-Value Error",
@@ -111,7 +126,13 @@ def plot_lr_schedule_ablation(
             ax.plot(x_mean, y_mean, linewidth=2, label=labels[schedule])
             ax.fill_between(x_mean, y_mean - y_se, y_mean + y_se, alpha=0.15)
         if key == "exploitability":
-            ax.axhline(exploitability_threshold, linestyle="--", label="Exploitability threshold")
+            ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
+        elif key == "average_policy_value":
+            ax.axhline(
+                average_policy_value_target,
+                linestyle="--",
+                label="Player 0 Nash value",
+            )
         ax.set_xlabel(x_key.replace("_", " ").title())
         ax.set_ylabel(ylabel)
         ax.set_title(title)
@@ -134,12 +155,40 @@ def plot_lr_schedule_ablation(
     ax.bar(x_pos, final_means, yerr=final_ses, capsize=4)
     ax.set_xticks(x_pos)
     ax.set_xticklabels([labels[s] for s in schedule_ids], rotation=20, ha="right")
+    ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Learning-rate schedule")
     ax.set_ylabel("Mean final exploitability")
     ax.set_title("Final Exploitability by Learning-Rate Schedule")
     ax.grid(True, axis="y")
+    ax.legend()
     fig.tight_layout()
     fig.savefig(run_dir / "final_exploitability_by_schedule.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    final_value_means = [
+        _summary_stat(aggregate_by_schedule, schedule, "final_policy_value", "mean")
+        for schedule in schedule_ids
+    ]
+    final_value_ses = [
+        _summary_stat(aggregate_by_schedule, schedule, "final_policy_value", "se")
+        for schedule in schedule_ids
+    ]
+    fig, ax = plt.subplots(figsize=(8, 5))
+    ax.bar(x_pos, final_value_means, yerr=final_value_ses, capsize=4)
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels([labels[s] for s in schedule_ids], rotation=20, ha="right")
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        label="Player 0 Nash value",
+    )
+    ax.set_xlabel("Learning-rate schedule")
+    ax.set_ylabel("Mean final average policy value for player 0")
+    ax.set_title("Final Average Policy Value by Learning-Rate Schedule")
+    ax.grid(True, axis="y")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(run_dir / "final_average_policy_value_by_schedule.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
     if paired_rows:
@@ -191,4 +240,3 @@ def plot_lr_schedule_ablation(
         fig.tight_layout()
         fig.savefig(run_dir / filename, dpi=200, bbox_inches="tight")
         plt.close(fig)
-

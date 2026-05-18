@@ -86,8 +86,11 @@ Generated PNGs:
 | --- | --- |
 | `exploitability_by_iteration.png` | Mean exploitability curves by policy-training regime. |
 | `exploitability_by_nodes.png` | Mean exploitability by nodes touched. |
+| `average_policy_value_by_iteration.png` | Mean average-policy value curves by policy-training regime. |
+| `average_policy_value_by_nodes.png` | Mean average-policy value by nodes touched. |
 | `policy_value_error_by_iteration.png` | Mean policy-value error from the known Kuhn value. |
 | `final_exploitability_by_regime.png` | Final exploitability bar chart. |
+| `final_average_policy_value_by_regime.png` | Final average-policy value bar chart. |
 | `final_policy_value_error_by_regime.png` | Final policy-value error bar chart. |
 | `cumulative_policy_training_events.png` | Cumulative policy-training events by regime. |
 | `cumulative_policy_gradient_steps.png` | Cumulative policy-gradient steps by regime. |
@@ -98,4 +101,3 @@ Generated PNGs:
 Lower exploitability and lower policy-value error are better. Policy loss,
 entropy, and update-budget diagnostics help interpret the extraction procedure
 but should not be treated as independent evidence of Nash convergence.
-

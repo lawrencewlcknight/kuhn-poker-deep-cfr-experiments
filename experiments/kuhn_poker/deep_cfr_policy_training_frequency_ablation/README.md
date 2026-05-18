@@ -78,8 +78,11 @@ Generated PNGs:
 | --- | --- |
 | `exploitability_by_iteration.png` | Mean exploitability curves by policy-training frequency. |
 | `exploitability_by_nodes.png` | Mean exploitability by nodes touched. |
+| `average_policy_value_by_iteration.png` | Mean average-policy value curves by policy-training frequency. |
+| `average_policy_value_by_nodes.png` | Mean average-policy value by nodes touched. |
 | `policy_value_error_by_iteration.png` | Mean policy-value error from the known Kuhn value. |
 | `final_exploitability_by_frequency.png` | Final exploitability bar chart. |
+| `final_average_policy_value_by_frequency.png` | Final average-policy value bar chart. |
 | `stability_summaries_by_frequency.png` | Final-window exploitability and normalised AUC summaries. |
 | `policy_loss_by_frequency.png` | Average-policy supervised loss diagnostic. |
 | `cumulative_policy_training_events.png` | Cumulative policy-training events by arm. |
@@ -89,4 +92,3 @@ Generated PNGs:
 Lower exploitability, lower policy-value error, and lower normalised
 exploitability AUC are better. Policy loss and entropy are diagnostics, not
 independent evidence of Nash convergence.
-

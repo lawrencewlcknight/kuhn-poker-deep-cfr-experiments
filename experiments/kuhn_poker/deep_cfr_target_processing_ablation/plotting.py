@@ -72,6 +72,7 @@ def plot_target_processing_ablation(
     variants: Sequence[Mapping[str, object]],
     baseline_variant_id: str,
     exploitability_threshold: float,
+    average_policy_value_target: float,
     aggregate_by_variant: dict,
     paired_rows: Sequence[dict],
 ) -> None:
@@ -98,6 +99,20 @@ def plot_target_processing_ablation(
             "nodes_touched",
         ),
         (
+            "average_policy_value",
+            "Average policy value for player 0",
+            "Target-Processing Ablation: Average Policy Value",
+            "average_policy_value_by_iteration.png",
+            "iterations",
+        ),
+        (
+            "average_policy_value",
+            "Average policy value for player 0",
+            "Target-Processing Ablation by Nodes Touched",
+            "average_policy_value_by_nodes.png",
+            "nodes_touched",
+        ),
+        (
             "policy_value_error",
             r"$|v(\sigma)-(-1/18)|$",
             "Target-Processing Ablation: Policy-Value Error",
@@ -113,7 +128,13 @@ def plot_target_processing_ablation(
             ax.plot(x_mean, y_mean, linewidth=2, label=labels[variant_id])
             ax.fill_between(x_mean, y_mean - y_se, y_mean + y_se, alpha=0.15)
         if key == "exploitability":
-            ax.axhline(exploitability_threshold, linestyle="--", label="Exploitability threshold")
+            ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
+        elif key == "average_policy_value":
+            ax.axhline(
+                average_policy_value_target,
+                linestyle="--",
+                label="Player 0 Nash value",
+            )
         ax.set_xlabel(x_key.replace("_", " ").title())
         ax.set_ylabel(ylabel)
         ax.set_title(title)
@@ -136,11 +157,38 @@ def plot_target_processing_ablation(
     ax.bar(x_pos, final_means, yerr=final_ses, capsize=4)
     ax.set_xticks(x_pos)
     ax.set_xticklabels([labels[v] for v in variant_ids], rotation=25, ha="right")
+    ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_ylabel("Mean final exploitability")
     ax.set_title("Final Exploitability by Target-Processing Variant")
     ax.grid(True, axis="y")
+    ax.legend()
     fig.tight_layout()
     fig.savefig(run_dir / "final_exploitability_by_variant.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    final_value_means = [
+        _summary_stat(aggregate_by_variant, variant_id, "final_policy_value", "mean")
+        for variant_id in variant_ids
+    ]
+    final_value_ses = [
+        _summary_stat(aggregate_by_variant, variant_id, "final_policy_value", "se")
+        for variant_id in variant_ids
+    ]
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.bar(x_pos, final_value_means, yerr=final_value_ses, capsize=4)
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels([labels[v] for v in variant_ids], rotation=25, ha="right")
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        label="Player 0 Nash value",
+    )
+    ax.set_ylabel("Mean final average policy value for player 0")
+    ax.set_title("Final Average Policy Value by Target-Processing Variant")
+    ax.grid(True, axis="y")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(run_dir / "final_average_policy_value_by_variant.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
     if paired_rows:

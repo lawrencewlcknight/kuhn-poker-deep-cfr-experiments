@@ -6,7 +6,10 @@ with Experiment 2. It varies only a bounded set of optimisation and capacity
 hyperparameters around the Experiment 2 baseline.
 """
 
-from deep_cfr_poker.constants import DEFAULT_EXPLOITABILITY_THRESHOLD
+from deep_cfr_poker.constants import (
+    DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    DEFAULT_EXPLOITABILITY_THRESHOLD,
+)
 
 
 EXPERIMENT2_BASELINE_CONFIG = {
@@ -59,6 +62,7 @@ DEFAULT_CONFIG = {
     "confirmation_seeds": CONFIRMATION_SEEDS,
     "extended_confirmation_seeds": EXTENDED_CONFIRMATION_SEEDS,
     "master_seed": 20260508,
+    "average_policy_value_target": DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     "exploitability_threshold": DEFAULT_EXPLOITABILITY_THRESHOLD,
     "selection_metric": "final_exploitability",
     "secondary_selection_metric": "normalised_exploitability_auc_by_iteration",

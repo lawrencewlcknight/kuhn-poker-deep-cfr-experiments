@@ -61,6 +61,7 @@ def plot_final_only_policy_training_ablation(
     variants: Sequence[Mapping[str, object]],
     reference_variant_id: str,
     exploitability_threshold: float,
+    average_policy_value_target: float,
     aggregate_by_variant: dict,
 ) -> None:
     if not results:
@@ -76,7 +77,7 @@ def plot_final_only_policy_training_ablation(
         mean, se = _mean_and_se(_stack(_results_for_variant(results, variant_id), "exploitability"))
         ax.plot(iterations, mean, linewidth=2, label=variant_labels[variant_id])
         ax.fill_between(iterations, mean - se, mean + se, alpha=0.15)
-    ax.axhline(exploitability_threshold, linestyle="--", label="Exploitability threshold")
+    ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Training iteration")
     ax.set_ylabel("Exploitability (NashConv/2)")
     ax.set_title("Average-Policy Training Timing: Exploitability")
@@ -93,7 +94,7 @@ def plot_final_only_policy_training_ablation(
         nodes_mean, _ = _mean_and_se(_stack(variant_results, "nodes_touched"))
         ax.plot(nodes_mean, exp_mean, linewidth=2, label=variant_labels[variant_id])
         ax.fill_between(nodes_mean, exp_mean - exp_se, exp_mean + exp_se, alpha=0.15)
-    ax.axhline(exploitability_threshold, linestyle="--", label="Exploitability threshold")
+    ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Nodes touched")
     ax.set_ylabel("Exploitability (NashConv/2)")
     ax.set_title("Average-Policy Training Timing by Nodes Touched")
@@ -101,6 +102,48 @@ def plot_final_only_policy_training_ablation(
     ax.legend()
     fig.tight_layout()
     fig.savefig(run_dir / "exploitability_by_nodes.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    for variant_id in variant_ids:
+        mean, se = _mean_and_se(
+            _stack(_results_for_variant(results, variant_id), "average_policy_value")
+        )
+        ax.plot(iterations, mean, linewidth=2, label=variant_labels[variant_id])
+        ax.fill_between(iterations, mean - se, mean + se, alpha=0.15)
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        label="Player 0 Nash value",
+    )
+    ax.set_xlabel("Training iteration")
+    ax.set_ylabel("Average policy value for player 0")
+    ax.set_title("Average-Policy Training Timing: Average Policy Value")
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(run_dir / "average_policy_value_by_iteration.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    for variant_id in variant_ids:
+        variant_results = _results_for_variant(results, variant_id)
+        value_mean, value_se = _mean_and_se(_stack(variant_results, "average_policy_value"))
+        nodes_mean, _ = _mean_and_se(_stack(variant_results, "nodes_touched"))
+        ax.plot(nodes_mean, value_mean, linewidth=2, label=variant_labels[variant_id])
+        ax.fill_between(nodes_mean, value_mean - value_se, value_mean + value_se, alpha=0.15)
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        label="Player 0 Nash value",
+    )
+    ax.set_xlabel("Nodes touched")
+    ax.set_ylabel("Average policy value for player 0")
+    ax.set_title("Average-Policy Training Timing by Nodes Touched")
+    ax.grid(True)
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(run_dir / "average_policy_value_by_nodes.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(9, 5))
@@ -135,12 +178,20 @@ def plot_final_only_policy_training_ablation(
         _summary_stat(aggregate_by_variant, variant_id, "final_policy_value_error", "se")
         for variant_id in variant_ids
     ]
+    final_value_means = [
+        _summary_stat(aggregate_by_variant, variant_id, "final_policy_value", "mean")
+        for variant_id in variant_ids
+    ]
+    final_value_ses = [
+        _summary_stat(aggregate_by_variant, variant_id, "final_policy_value", "se")
+        for variant_id in variant_ids
+    ]
 
     fig, ax = plt.subplots(figsize=(9, 5))
     ax.bar(x_pos, final_means, yerr=final_ses, capsize=4)
     ax.set_xticks(x_pos)
     ax.set_xticklabels(labels)
-    ax.axhline(exploitability_threshold, linestyle="--", label="Exploitability threshold")
+    ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Average-policy training regime")
     ax.set_ylabel("Final exploitability")
     ax.set_title("Final Exploitability by Training Regime")
@@ -148,6 +199,24 @@ def plot_final_only_policy_training_ablation(
     ax.legend()
     fig.tight_layout()
     fig.savefig(run_dir / "final_exploitability_by_regime.png", dpi=200, bbox_inches="tight")
+    plt.close(fig)
+
+    fig, ax = plt.subplots(figsize=(9, 5))
+    ax.bar(x_pos, final_value_means, yerr=final_value_ses, capsize=4)
+    ax.set_xticks(x_pos)
+    ax.set_xticklabels(labels)
+    ax.axhline(
+        average_policy_value_target,
+        linestyle="--",
+        label="Player 0 Nash value",
+    )
+    ax.set_xlabel("Average-policy training regime")
+    ax.set_ylabel("Final average policy value for player 0")
+    ax.set_title("Final Average Policy Value by Training Regime")
+    ax.grid(True, axis="y")
+    ax.legend()
+    fig.tight_layout()
+    fig.savefig(run_dir / "final_average_policy_value_by_regime.png", dpi=200, bbox_inches="tight")
     plt.close(fig)
 
     fig, ax = plt.subplots(figsize=(9, 5))
@@ -220,4 +289,3 @@ def plot_final_only_policy_training_ablation(
         fig.tight_layout()
         fig.savefig(run_dir / "paired_final_exploitability_delta_vs_reference.png", dpi=200, bbox_inches="tight")
         plt.close(fig)
-
