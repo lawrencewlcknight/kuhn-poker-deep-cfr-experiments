@@ -15,6 +15,7 @@ from deep_cfr_poker.experiment_utils import (
     first_time_to_threshold,
     json_safe,
     normalised_auc,
+    resolve_solver_batch_sizes,
     summarise_numeric_fields,
     _pad_to_length,
     _stack_padded,
@@ -79,6 +80,23 @@ def test_normalised_auc_drops_nan_and_normalises_by_range():
         np.array([1.0, 2.0, float("nan"), 4.0]),
     )
     assert auc == pytest.approx(np.trapz([1.0, 2.0, 4.0], [0.0, 1.0, 3.0]) / 3.0)
+
+
+def test_resolve_solver_batch_sizes_falls_back_to_positive_minibatches():
+    assert resolve_solver_batch_sizes(
+        {"batch_size_advantage": None, "batch_size_strategy": None},
+        default_batch_size=32,
+    ) == (32, 32)
+    assert resolve_solver_batch_sizes(
+        {"batch_size_advantage": 128, "batch_size_strategy": None}
+    ) == (128, 128)
+    assert resolve_solver_batch_sizes(
+        {"batch_size_advantage": 128, "batch_size_strategy": 64}
+    ) == (128, 64)
+    assert resolve_solver_batch_sizes(
+        {"batch_size_advantage": 0, "batch_size_strategy": 0},
+        default_batch_size=32,
+    ) == (32, 32)
 
 
 def test_summarise_numeric_fields_skips_seed_and_handles_nan():

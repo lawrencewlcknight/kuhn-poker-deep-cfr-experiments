@@ -13,10 +13,12 @@ The default design has two stages:
 | `confirmation` | Experiment 2 baseline plus the top 2 screening candidates, run for 1,500 iterations over seeds `1234,2025,31415`. |
 
 The constrained search space varies learning rate, traversals, network
-architecture, replay-memory size, batch sizes, supervised training steps, and
-advantage-network reinitialisation. Policy-network training cadence and
-evaluation cadence remain aligned with Experiment 2 because they have their
-own dedicated ablations.
+architecture, replay-memory size, advantage-network batch size, supervised
+training steps, and advantage-network reinitialisation. Average-policy
+batch size is held fixed to avoid confounding policy-extraction memory
+pressure with the tuned advantage-training hyperparameters. Policy-network
+training cadence and evaluation cadence remain aligned with Experiment 2
+because they have their own dedicated ablations.
 
 ## Run
 

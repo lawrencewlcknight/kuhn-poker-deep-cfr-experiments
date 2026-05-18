@@ -33,6 +33,7 @@ from deep_cfr_poker.experiment_utils import (  # noqa: E402
     first_time_to_threshold,
     json_safe,
     normalised_auc,
+    resolve_solver_batch_sizes,
     write_dict_rows_csv,
     write_experiment_metadata,
     write_failed_seeds,
@@ -102,14 +103,18 @@ def build_config(args) -> dict:
 
 
 def _solver_kwargs(config: Mapping[str, object], *, num_iterations: int) -> dict:
+    batch_size_advantage, batch_size_strategy = resolve_solver_batch_sizes(config)
+    if isinstance(config, dict):
+        config["batch_size_advantage"] = batch_size_advantage
+        config["batch_size_strategy"] = batch_size_strategy
     return dict(
         policy_network_layers=tuple(config["policy_network_layers"]),
         advantage_network_layers=tuple(config["advantage_network_layers"]),
         num_iterations=int(num_iterations),
         num_traversals=int(config["num_traversals"]),
         learning_rate=float(config["learning_rate"]),
-        batch_size_advantage=config["batch_size_advantage"],
-        batch_size_strategy=config["batch_size_strategy"],
+        batch_size_advantage=batch_size_advantage,
+        batch_size_strategy=batch_size_strategy,
         memory_capacity=int(config["memory_capacity"]),
         reinitialize_advantage_networks=bool(config["reinitialize_advantage_networks"]),
         policy_network_train_steps=int(config["policy_network_train_steps"]),

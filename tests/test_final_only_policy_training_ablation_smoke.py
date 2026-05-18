@@ -32,8 +32,8 @@ SMOKE_CONFIG = {
     "policy_network_layers": (8, 8),
     "advantage_network_layers": (8, 8),
     "learning_rate": 0.003,
-    "batch_size_advantage": None,
-    "batch_size_strategy": None,
+    "batch_size_advantage": 2,
+    "batch_size_strategy": 2,
     "memory_capacity": 256,
     "reinitialize_advantage_networks": False,
     "policy_network_train_steps": 1,
@@ -97,4 +97,3 @@ def test_final_only_policy_training_ablation_writes_expected_artifacts(tmp_path)
     ][0]
     assert np.isnan(final_only_result["exploitability"][0])
     assert np.isfinite(final_only_result["exploitability"][-1])
-

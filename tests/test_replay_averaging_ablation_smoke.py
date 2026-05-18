@@ -30,7 +30,7 @@ SMOKE_CONFIG = {
     "advantage_network_layers": (8, 8),
     "learning_rate": 0.003,
     "batch_size_advantage": 2,
-    "batch_size_strategy": None,
+    "batch_size_strategy": 2,
     "memory_capacity": 256,
     "reinitialize_advantage_networks": False,
     "policy_network_train_steps": 1,
@@ -95,4 +95,3 @@ def test_replay_averaging_ablation_writes_expected_artifacts(tmp_path):
     assert "delta_final_exploitability_vs_baseline" in paired[
         "priority_replay_uniform_avg"
     ]
-

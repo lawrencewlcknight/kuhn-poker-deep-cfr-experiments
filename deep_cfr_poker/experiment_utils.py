@@ -18,7 +18,7 @@ from open_spiel.python import policy
 from open_spiel.python.algorithms import expected_game_score
 from open_spiel.python.algorithms import exploitability
 
-from .constants import KUHN_GAME_VALUE_PLAYER_0
+from .constants import DEFAULT_SOLVER_BATCH_SIZE, KUHN_GAME_VALUE_PLAYER_0
 from .seeding import set_seed
 from .solver import DeepCFRSolver, SolveResult
 
@@ -26,6 +26,33 @@ from .solver import DeepCFRSolver, SolveResult
 _LOGGER = logging.getLogger(__name__)
 
 DEFAULT_FINAL_WINDOW = 5
+
+
+def _positive_batch_size_or_none(value) -> Optional[int]:
+    if value is None:
+        return None
+    value = int(value)
+    return value if value > 0 else None
+
+
+def resolve_solver_batch_sizes(
+    config: Mapping[str, object],
+    *,
+    default_batch_size: int = DEFAULT_SOLVER_BATCH_SIZE,
+) -> tuple[int, int]:
+    """Returns positive advantage / strategy minibatch sizes for solver runs.
+
+    The solver treats ``None`` and ``0`` as "train on the whole replay buffer",
+    which is too memory-hungry for experiment runs. If the strategy batch size
+    is not explicitly positive, keep it aligned with the advantage batch size.
+    """
+    advantage = _positive_batch_size_or_none(config.get("batch_size_advantage"))
+    if advantage is None:
+        advantage = int(default_batch_size)
+    strategy = _positive_batch_size_or_none(config.get("batch_size_strategy"))
+    if strategy is None:
+        strategy = advantage
+    return advantage, strategy
 
 
 def json_safe(value):
@@ -50,6 +77,7 @@ def make_solver(game, config) -> DeepCFRSolver:
     policy_network_train_every = int(
         config.get("policy_network_train_every", config["evaluation_interval"])
     )
+    batch_size_advantage, batch_size_strategy = resolve_solver_batch_sizes(config)
     return DeepCFRSolver(
         game,
         policy_network_layers=tuple(config["policy_network_layers"]),
@@ -72,8 +100,8 @@ def make_solver(game, config) -> DeepCFRSolver:
         learning_rate_warmup_iterations=int(
             config.get("learning_rate_warmup_iterations", 0)
         ),
-        batch_size_advantage=config["batch_size_advantage"],
-        batch_size_strategy=config["batch_size_strategy"],
+        batch_size_advantage=batch_size_advantage,
+        batch_size_strategy=batch_size_strategy,
         memory_capacity=int(config["memory_capacity"]),
         reinitialize_advantage_networks=bool(config["reinitialize_advantage_networks"]),
         policy_network_train_steps=int(config["policy_network_train_steps"]),
@@ -154,6 +182,9 @@ def run_single_seed(
     final_window: int = DEFAULT_FINAL_WINDOW,
 ) -> dict:
     """Runs one fixed-budget Deep CFR training run for a single seed."""
+    batch_size_advantage, batch_size_strategy = resolve_solver_batch_sizes(config)
+    config["batch_size_advantage"] = batch_size_advantage
+    config["batch_size_strategy"] = batch_size_strategy
     set_seed(seed)
     game = pyspiel.load_game(config["game_name"])
     solver = make_solver(game, config)

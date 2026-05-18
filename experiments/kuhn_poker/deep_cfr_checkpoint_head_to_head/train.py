@@ -28,7 +28,10 @@ import pyspiel
 import torch
 
 from deep_cfr_poker.constants import KUHN_GAME_VALUE_PLAYER_0
-from deep_cfr_poker.experiment_utils import write_dict_rows_csv
+from deep_cfr_poker.experiment_utils import (
+    resolve_solver_batch_sizes,
+    write_dict_rows_csv,
+)
 from deep_cfr_poker.seeding import set_seed
 from deep_cfr_poker.snapshots import (
     package_full_checkpoint_filename,
@@ -42,13 +45,17 @@ _LOGGER = logging.getLogger(__name__)
 
 def _solver_kwargs_from_config(config: Mapping[str, object]) -> dict:
     """Maps a config dict to the kwargs accepted by :class:`DeepCFRSolver`."""
+    batch_size_advantage, batch_size_strategy = resolve_solver_batch_sizes(config)
+    if isinstance(config, dict):
+        config["batch_size_advantage"] = batch_size_advantage
+        config["batch_size_strategy"] = batch_size_strategy
     return dict(
         policy_network_layers=tuple(config["policy_network_layers"]),
         advantage_network_layers=tuple(config["advantage_network_layers"]),
         num_traversals=int(config["num_traversals"]),
         learning_rate=float(config["learning_rate"]),
-        batch_size_advantage=config["batch_size_advantage"],
-        batch_size_strategy=config["batch_size_strategy"],
+        batch_size_advantage=batch_size_advantage,
+        batch_size_strategy=batch_size_strategy,
         memory_capacity=int(config["memory_capacity"]),
         reinitialize_advantage_networks=bool(
             config["reinitialize_advantage_networks"]

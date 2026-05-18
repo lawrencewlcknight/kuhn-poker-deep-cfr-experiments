@@ -33,6 +33,7 @@ from deep_cfr_poker.experiment_utils import (  # noqa: E402
     final_window_std,
     json_safe,
     normalised_auc,
+    resolve_solver_batch_sizes,
     run_single_seed,
     summarise_numeric_fields,
     write_dict_rows_csv,
@@ -93,8 +94,8 @@ def _compact_search_space() -> dict:
         "num_traversals": (4, 6),
         "policy_network_layers": ((8, 8), (8,)),
         "advantage_network_layers": ((8, 8), (8,)),
-        "batch_size_advantage": (0,),
-        "batch_size_strategy": (0,),
+        "batch_size_advantage": (2,),
+        "batch_size_strategy": (2,),
         "memory_capacity": (256,),
         "policy_network_train_steps": (1,),
         "advantage_network_train_steps": (1,),
@@ -111,8 +112,8 @@ def _apply_quick_test_defaults(config: dict) -> None:
             "num_traversals": 4,
             "evaluation_interval": 1,
             "learning_rate": 0.003,
-            "batch_size_advantage": 0,
-            "batch_size_strategy": 0,
+            "batch_size_advantage": 2,
+            "batch_size_strategy": 2,
             "memory_capacity": 256,
             "policy_network_train_steps": 1,
             "advantage_network_train_steps": 1,
@@ -227,6 +228,9 @@ def _run_config_for_stage(config: Mapping[str, object], stage: str, iterations: 
     run_config.setdefault("exploitability_threshold", DEFAULT_CONFIG["exploitability_threshold"])
     run_config.setdefault("policy_training_mode", "intermittent")
     run_config.setdefault("final_policy_network_train_steps", None)
+    batch_size_advantage, batch_size_strategy = resolve_solver_batch_sizes(run_config)
+    run_config["batch_size_advantage"] = batch_size_advantage
+    run_config["batch_size_strategy"] = batch_size_strategy
     return run_config
 
 

@@ -39,7 +39,10 @@ CONSTRAINED_SEARCH_SPACE = {
     "policy_network_layers": ((32, 32), (64, 64), (32, 32, 32)),
     "advantage_network_layers": ((32, 32), (64, 64), (32, 32, 32)),
     "batch_size_advantage": (512, 1024, 2048),
-    "batch_size_strategy": (512, 1024, 2048),
+    # Keep average-policy minibatch size fixed so random search does not
+    # confound policy-extraction memory pressure with the tuned advantage
+    # training hyperparameters.
+    "batch_size_strategy": (1024,),
     "memory_capacity": (int(1e6), int(5e6), int(1e7)),
     "policy_network_train_steps": (100, 200),
     "advantage_network_train_steps": (100, 200),
