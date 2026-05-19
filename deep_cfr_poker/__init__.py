@@ -6,6 +6,7 @@ from .constants import (
     DEFAULT_SOLVER_BATCH_SIZE,
     KUHN_GAME_VALUE_PLAYER_0,
 )
+from .experiment_utils import cleanup_training_memory
 from .solver import DeepCFRSolver, SolveResult
 
 __all__ = [
@@ -15,4 +16,5 @@ __all__ = [
     "KUHN_GAME_VALUE_PLAYER_0",
     "DEFAULT_EXPLOITABILITY_THRESHOLD",
     "DEFAULT_SOLVER_BATCH_SIZE",
+    "cleanup_training_memory",
 ]

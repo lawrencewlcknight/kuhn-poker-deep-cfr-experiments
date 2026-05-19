@@ -26,6 +26,7 @@ Path(os.environ["XDG_CACHE_HOME"]).mkdir(parents=True, exist_ok=True)
 from deep_cfr_poker.constants import KUHN_GAME_VALUE_PLAYER_0  # noqa: E402
 from deep_cfr_poker.experiment_utils import (  # noqa: E402
     DEFAULT_FINAL_WINDOW,
+    cleanup_training_memory,
     configure_run_logging,
     create_run_dir,
     final_window_mean,
@@ -235,6 +236,8 @@ def run_continuous_baseline(seed: int, config: Mapping[str, object]) -> dict:
     )
     result["summary"] = _summarise_result(result, config)
     result["summary"]["total_outer_wall_clock_seconds"] = float(time.perf_counter() - start)
+    del solver, solve_result, game
+    cleanup_training_memory()
     return result
 
 
@@ -263,6 +266,8 @@ def run_warm_start_arm(seed: int, config: Mapping[str, object], run_dir: Path) -
         include_buffers=True,
         include_rng_state=True,
     )
+    del first_solver, first_solve
+    cleanup_training_memory()
 
     second_solver = _make_solver(game, config, num_iterations=remaining)
     second_solver.load_full_model(checkpoint_path, map_location="cpu")
@@ -285,6 +290,8 @@ def run_warm_start_arm(seed: int, config: Mapping[str, object], run_dir: Path) -
     result["summary"]["total_outer_wall_clock_seconds"] = float(time.perf_counter() - start)
     result["summary"]["warm_start_boundary"] = boundary
     result["summary"]["checkpoint_path"] = str(checkpoint_path)
+    del second_solver, second_solve, game, first_result, second_result
+    cleanup_training_memory()
     return result
 
 

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import gc
 import json
 import logging
 from datetime import datetime
@@ -53,6 +54,13 @@ def resolve_solver_batch_sizes(
     if strategy is None:
         strategy = advantage
     return advantage, strategy
+
+
+def cleanup_training_memory() -> None:
+    """Prompt Python / PyTorch to release memory after a completed training run."""
+    gc.collect()
+    if torch.cuda.is_available():
+        torch.cuda.empty_cache()
 
 
 def json_safe(value):
@@ -284,6 +292,8 @@ def run_single_seed(
             checkpoint_dir / f"seed_{seed}_final_model.pt",
         )
 
+    del solver, solve_result, final_policy, game
+    cleanup_training_memory()
     return result
 
 
