@@ -1,0 +1,68 @@
+{
+  "created_at_utc": "2026-05-17T14:02:45.431349+00:00",
+  "dry_run": false,
+  "overwrite": false,
+  "runs": [
+    {
+      "source_run_dir": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613",
+      "experiment_name": "kuhn_poker_deep_cfr_multiseed_validation",
+      "destination_dir": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613",
+      "selected_file_count": 10,
+      "selected_files": [
+        "advantage_target_variance_diagnostic.png",
+        "aggregate_summary.json",
+        "checkpoint_curves.csv",
+        "experiment_metadata.json",
+        "exploitability_by_iteration_multiseed.png",
+        "exploitability_by_nodes_multiseed.png",
+        "policy_distribution_diagnostics.png",
+        "policy_loss_diagnostic.png",
+        "policy_value_error_multiseed.png",
+        "seed_summary.csv"
+      ]
+    }
+  ],
+  "copied": [
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/advantage_target_variance_diagnostic.png",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/advantage_target_variance_diagnostic.png"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/aggregate_summary.json",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/aggregate_summary.json"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/checkpoint_curves.csv",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/checkpoint_curves.csv"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/experiment_metadata.json",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/experiment_metadata.json"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/exploitability_by_iteration_multiseed.png",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/exploitability_by_iteration_multiseed.png"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/exploitability_by_nodes_multiseed.png",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/exploitability_by_nodes_multiseed.png"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/policy_distribution_diagnostics.png",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/policy_distribution_diagnostics.png"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/policy_loss_diagnostic.png",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/policy_loss_diagnostic.png"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/policy_value_error_multiseed.png",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/policy_value_error_multiseed.png"
+    },
+    {
+      "source": "/Users/lawrenceknight/Documents/deep_cfr_v3/kuhn_poker_deep_cfr/kuhn-poker-deep-cfr-experiments/cloud_outputs/exp1-validation-20260516-175249/outputs/cloud/exp1-validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/seed_summary.csv",
+      "destination": "thesis_artifacts/kuhn_poker_deep_cfr_multiseed_validation/kuhn_poker_deep_cfr_multiseed_validation_20260516_165613/seed_summary.csv"
+    }
+  ],
+  "skipped": []
+}

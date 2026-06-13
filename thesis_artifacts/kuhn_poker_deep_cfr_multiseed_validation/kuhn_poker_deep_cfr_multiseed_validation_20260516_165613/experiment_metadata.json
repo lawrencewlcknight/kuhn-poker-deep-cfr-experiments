@@ -1,0 +1,53 @@
+{
+  "experiment_config": {
+    "experiment_name": "kuhn_poker_deep_cfr_multiseed_validation",
+    "game_name": "kuhn_poker",
+    "num_iterations": 1500,
+    "num_traversals": 320,
+    "evaluation_interval": 25,
+    "policy_network_layers": [
+      32,
+      32
+    ],
+    "advantage_network_layers": [
+      32,
+      32
+    ],
+    "learning_rate": 0.003,
+    "batch_size_advantage": 1024,
+    "batch_size_strategy": 1024,
+    "memory_capacity": 10000000,
+    "reinitialize_advantage_networks": false,
+    "policy_network_train_steps": 200,
+    "advantage_network_train_steps": 200,
+    "compute_exploitability": true,
+    "exploitability_threshold": 0.05
+  },
+  "seeds": [
+    1234,
+    2025,
+    31415,
+    27182,
+    16180,
+    4242,
+    8675309,
+    7,
+    99,
+    1001
+  ],
+  "completed_seeds": [
+    1234,
+    2025,
+    31415,
+    27182,
+    16180,
+    4242,
+    8675309,
+    7,
+    99,
+    1001
+  ],
+  "kuhn_game_value_player_0": -0.05555555555555555,
+  "torch_version": "2.8.0+cu128",
+  "pyspiel_version": "1.6.3"
+}
