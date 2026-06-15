@@ -67,7 +67,12 @@ The repository is organised so that each experiment can be run independently whi
 │       │   ├── plotting.py
 │       │   ├── run.py
 │       │   └── README.md
-│       └── deep_cfr_replay_averaging_ablation/      # Experiment 10
+│       ├── deep_cfr_replay_averaging_ablation/      # Experiment 10
+│       │   ├── config.py
+│       │   ├── plotting.py
+│       │   ├── run.py
+│       │   └── README.md
+│       └── deep_cfr_network_size_ablation/          # Experiment 11
 │           ├── config.py
 │           ├── plotting.py
 │           ├── run.py
@@ -170,6 +175,14 @@ Compares raw advantage targets with standardized targets, clipped targets, and s
 Compares the Experiment 2 baseline, `uniform_replay_linear_avg_exp2_baseline`, with uniform average-strategy weighting. Uniform average weighting removes the baseline CFR-style iteration weighting from the average-policy supervised loss. Priority replay variants remain available as optional exploratory arms, but are excluded from the default run because the current priority sampler is too compute intensive for the standard experiment suite.
 
 **Question:** does average-strategy target weighting improve Deep CFR stability or final average-policy quality when every other core training parameter is held fixed?
+
+### 11. Kuhn poker Deep CFR network-size ablation
+
+[`experiments/kuhn_poker/deep_cfr_network_size_ablation/`](experiments/kuhn_poker/deep_cfr_network_size_ablation/README.md)
+
+Runs a controlled architecture grid anchored to Experiment 1. Both the advantage networks and average-policy network use hidden depths of `2`, `4`, or `8` layers and hidden widths of `8`, `16`, or `32` units, with all other solver parameters fixed. The `layers2_width32` arm is the Experiment 1 architecture and is used as the paired baseline.
+
+**Question:** how sensitive is Deep CFR performance in Kuhn poker to neural-network depth and width when the data-generation budget, optimiser, replay capacity, and average-policy training schedule are held fixed?
 
 ## Setup
 
@@ -348,6 +361,25 @@ python -m experiments.kuhn_poker.deep_cfr_replay_averaging_ablation.run \
   --batch-size-strategy 2 \
   --memory-capacity 256 \
   --output-root outputs/smoke_tests
+
+# Experiment 11 — network-size ablation
+python -m experiments.kuhn_poker.deep_cfr_network_size_ablation.run
+
+# Experiment 11 — quick smoke test
+python -m experiments.kuhn_poker.deep_cfr_network_size_ablation.run \
+  --seeds 1234 \
+  --iterations 3 \
+  --traversals 4 \
+  --evaluation-interval 1 \
+  --policy-network-train-every 1 \
+  --depths 2,4 \
+  --widths 8 \
+  --policy-network-train-steps 1 \
+  --advantage-network-train-steps 1 \
+  --batch-size-advantage 2 \
+  --batch-size-strategy 2 \
+  --memory-capacity 256 \
+  --output-root outputs/smoke_tests
 ```
 
 Each CLI exposes overrides for the most commonly varied configuration values. See `--help` for the per-experiment flag list, and the experiment's own README for the full output catalogue.
@@ -376,4 +408,4 @@ is documented in [`docs/THESIS_ARTIFACTS.md`](docs/THESIS_ARTIFACTS.md).
 
 ## Academic interpretation
 
-Exploitability is the primary equilibrium-quality metric. Policy-value error and neural-network losses are useful diagnostics, but they should not be interpreted as evidence of Nash-equilibrium convergence on their own. Head-to-head expected value (experiment 2) is a separate, complementary signal: a low-exploitability checkpoint may still lose to specific earlier checkpoints in direct play. Policy-training frequency and final-only extraction (experiments 3 and 4) change the supervised fitting budget and timing for the average-policy network, advantage-network reinitialisation (experiment 5) changes the regret-approximation optimisation path, the fair warm-start ablation (experiment 6) tests checkpoint/resume fidelity, the learning-rate schedule ablation (experiment 7) changes the optimiser trajectory while holding the Deep CFR data-generation protocol fixed, the constrained random search (experiment 8) screens multiple implementation and optimisation choices under a practical compute budget, the target-processing ablation (experiment 9) changes only the supervised advantage-network targets seen during fitting, and the replay/averaging ablation (experiment 10) changes only average-policy target weighting by default. In the thesis, report exploitability, head-to-head strength, supervised update budget, checkpoint fidelity, optimiser schedule, search-stage uncertainty, target-processing diagnostics, optional replay diagnostics, and paired ablation differences as distinct quantities, and treat contrasts between them as empirical results rather than failure modes.
+Exploitability is the primary equilibrium-quality metric. Policy-value error and neural-network losses are useful diagnostics, but they should not be interpreted as evidence of Nash-equilibrium convergence on their own. Head-to-head expected value (experiment 2) is a separate, complementary signal: a low-exploitability checkpoint may still lose to specific earlier checkpoints in direct play. Policy-training frequency and final-only extraction (experiments 3 and 4) change the supervised fitting budget and timing for the average-policy network, advantage-network reinitialisation (experiment 5) changes the regret-approximation optimisation path, the fair warm-start ablation (experiment 6) tests checkpoint/resume fidelity, the learning-rate schedule ablation (experiment 7) changes the optimiser trajectory while holding the Deep CFR data-generation protocol fixed, the constrained random search (experiment 8) screens multiple implementation and optimisation choices under a practical compute budget, the target-processing ablation (experiment 9) changes only the supervised advantage-network targets seen during fitting, the replay/averaging ablation (experiment 10) changes only average-policy target weighting by default, and the network-size ablation (experiment 11) changes only the policy and advantage MLP architecture. In the thesis, report exploitability, head-to-head strength, supervised update budget, checkpoint fidelity, optimiser schedule, search-stage uncertainty, target-processing diagnostics, optional replay diagnostics, architecture-size diagnostics, and paired ablation differences as distinct quantities, and treat contrasts between them as empirical results rather than failure modes.

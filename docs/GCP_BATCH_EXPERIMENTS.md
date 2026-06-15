@@ -676,6 +676,19 @@ Example:
   "16000"
 ```
 
+Network-size ablation example:
+
+```bash
+./gcp/submit_batch_experiment.sh \
+  "exp11-network-size-$(date +%Y%m%d-%H%M%S)" \
+  "python -m experiments.kuhn_poker.deep_cfr_network_size_ablation.run \
+    --output-root outputs/cloud/exp11-network-size" \
+  "n2-standard-4" \
+  "43200" \
+  "4000" \
+  "16000"
+```
+
 ---
 
 ## 15. Cleaning up
