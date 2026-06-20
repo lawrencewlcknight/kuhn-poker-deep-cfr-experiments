@@ -22,6 +22,7 @@ The repository is organised so that each experiment can be run independently whi
 │   └── seeding.py                                    # Reproducibility helpers
 ├── experiments/
 │   └── kuhn_poker/
+│       ├── architecture_ablation_common.py           # Shared architecture-ablation runner
 │       ├── deep_cfr_multiseed_validation/            # Experiment 1
 │       │   ├── config.py
 │       │   ├── run.py
@@ -72,9 +73,21 @@ The repository is organised so that each experiment can be run independently whi
 │       │   ├── plotting.py
 │       │   ├── run.py
 │       │   └── README.md
-│       └── deep_cfr_network_size_ablation/          # Experiment 11
+│       ├── deep_cfr_network_size_ablation/          # Experiment 11
+│       │   ├── config.py
+│       │   ├── plotting.py
+│       │   ├── run.py
+│       │   └── README.md
+│       ├── deep_cfr_residual_network_ablation/      # Experiment 12
+│       │   ├── config.py
+│       │   ├── run.py
+│       │   └── README.md
+│       ├── deep_cfr_layer_norm_network_ablation/    # Experiment 13
+│       │   ├── config.py
+│       │   ├── run.py
+│       │   └── README.md
+│       └── deep_cfr_network_role_ablation/          # Experiment 14
 │           ├── config.py
-│           ├── plotting.py
 │           ├── run.py
 │           └── README.md
 ├── tests/                                            # pytest suite
@@ -183,6 +196,30 @@ Compares the Experiment 2 baseline, `uniform_replay_linear_avg_exp2_baseline`, w
 Runs a controlled architecture grid anchored to Experiment 1. Both the advantage networks and average-policy network use hidden depths of `2`, `4`, or `8` layers and hidden widths of `8`, `16`, or `32` units, with all other solver parameters fixed. The `layers2_width32` arm is the Experiment 1 architecture and is used as the paired baseline. The default run uses three matched seeds so that the full grid completes within the 48-hour Batch runtime limit.
 
 **Question:** how sensitive is Deep CFR performance in Kuhn poker to neural-network depth and width when the data-generation budget, optimiser, replay capacity, and average-policy training schedule are held fixed?
+
+### 12. Kuhn poker Deep CFR residual-network ablation
+
+[`experiments/kuhn_poker/deep_cfr_residual_network_ablation/`](experiments/kuhn_poker/deep_cfr_residual_network_ablation/README.md)
+
+Compares plain MLPs against residual MLPs at fixed width `32` and hidden depths `2`, `4`, and `8`. Both the advantage networks and average-policy network use the same architecture within each variant.
+
+**Question:** do skip connections improve Deep CFR optimisation stability or final average-policy quality for deeper networks?
+
+### 13. Kuhn poker Deep CFR layer-normalisation network ablation
+
+[`experiments/kuhn_poker/deep_cfr_layer_norm_network_ablation/`](experiments/kuhn_poker/deep_cfr_layer_norm_network_ablation/README.md)
+
+Compares plain MLPs, layer-normalised MLPs, and residual layer-normalised MLPs at fixed width `32` and hidden depths `2`, `4`, and `8`.
+
+**Question:** does normalising hidden activations improve Deep CFR supervised fitting stability under the same data-generation and optimiser budget?
+
+### 14. Kuhn poker Deep CFR network-role ablation
+
+[`experiments/kuhn_poker/deep_cfr_network_role_ablation/`](experiments/kuhn_poker/deep_cfr_network_role_ablation/README.md)
+
+Varies policy-network capacity and advantage-network capacity separately. The baseline is policy `2x32`, advantage `2x32`; treatment arms shrink or deepen only one of the two network roles at a time.
+
+**Question:** is Deep CFR performance more sensitive to the average-policy network architecture or to the advantage-network architecture?
 
 ## Setup
 
@@ -380,6 +417,60 @@ python -m experiments.kuhn_poker.deep_cfr_network_size_ablation.run \
   --batch-size-strategy 2 \
   --memory-capacity 256 \
   --output-root outputs/smoke_tests
+
+# Experiment 12 — residual-network ablation
+python -m experiments.kuhn_poker.deep_cfr_residual_network_ablation.run
+
+# Experiment 12 — quick smoke test
+python -m experiments.kuhn_poker.deep_cfr_residual_network_ablation.run \
+  --seeds 1234 \
+  --iterations 3 \
+  --traversals 4 \
+  --evaluation-interval 1 \
+  --policy-network-train-every 1 \
+  --variant-ids plain_layers2_width32,residual_layers2_width32 \
+  --policy-network-train-steps 1 \
+  --advantage-network-train-steps 1 \
+  --batch-size-advantage 2 \
+  --batch-size-strategy 2 \
+  --memory-capacity 256 \
+  --output-root outputs/smoke_tests
+
+# Experiment 13 — layer-normalisation network ablation
+python -m experiments.kuhn_poker.deep_cfr_layer_norm_network_ablation.run
+
+# Experiment 13 — quick smoke test
+python -m experiments.kuhn_poker.deep_cfr_layer_norm_network_ablation.run \
+  --seeds 1234 \
+  --iterations 3 \
+  --traversals 4 \
+  --evaluation-interval 1 \
+  --policy-network-train-every 1 \
+  --variant-ids plain_layers2_width32,layer_norm_layers2_width32,residual_layer_norm_layers2_width32 \
+  --policy-network-train-steps 1 \
+  --advantage-network-train-steps 1 \
+  --batch-size-advantage 2 \
+  --batch-size-strategy 2 \
+  --memory-capacity 256 \
+  --output-root outputs/smoke_tests
+
+# Experiment 14 — network-role ablation
+python -m experiments.kuhn_poker.deep_cfr_network_role_ablation.run
+
+# Experiment 14 — quick smoke test
+python -m experiments.kuhn_poker.deep_cfr_network_role_ablation.run \
+  --seeds 1234 \
+  --iterations 3 \
+  --traversals 4 \
+  --evaluation-interval 1 \
+  --policy-network-train-every 1 \
+  --variant-ids baseline_policy2x32_advantage2x32,small_policy_baseline_advantage,baseline_policy_small_advantage \
+  --policy-network-train-steps 1 \
+  --advantage-network-train-steps 1 \
+  --batch-size-advantage 2 \
+  --batch-size-strategy 2 \
+  --memory-capacity 256 \
+  --output-root outputs/smoke_tests
 ```
 
 Each CLI exposes overrides for the most commonly varied configuration values. See `--help` for the per-experiment flag list, and the experiment's own README for the full output catalogue.
@@ -408,4 +499,4 @@ is documented in [`docs/THESIS_ARTIFACTS.md`](docs/THESIS_ARTIFACTS.md).
 
 ## Academic interpretation
 
-Exploitability is the primary equilibrium-quality metric. Policy-value error and neural-network losses are useful diagnostics, but they should not be interpreted as evidence of Nash-equilibrium convergence on their own. Head-to-head expected value (experiment 2) is a separate, complementary signal: a low-exploitability checkpoint may still lose to specific earlier checkpoints in direct play. Policy-training frequency and final-only extraction (experiments 3 and 4) change the supervised fitting budget and timing for the average-policy network, advantage-network reinitialisation (experiment 5) changes the regret-approximation optimisation path, the fair warm-start ablation (experiment 6) tests checkpoint/resume fidelity, the learning-rate schedule ablation (experiment 7) changes the optimiser trajectory while holding the Deep CFR data-generation protocol fixed, the constrained random search (experiment 8) screens multiple implementation and optimisation choices under a practical compute budget, the target-processing ablation (experiment 9) changes only the supervised advantage-network targets seen during fitting, the replay/averaging ablation (experiment 10) changes only average-policy target weighting by default, and the network-size ablation (experiment 11) changes only the policy and advantage MLP architecture. In the thesis, report exploitability, head-to-head strength, supervised update budget, checkpoint fidelity, optimiser schedule, search-stage uncertainty, target-processing diagnostics, optional replay diagnostics, architecture-size diagnostics, and paired ablation differences as distinct quantities, and treat contrasts between them as empirical results rather than failure modes.
+Exploitability is the primary equilibrium-quality metric. Policy-value error and neural-network losses are useful diagnostics, but they should not be interpreted as evidence of Nash-equilibrium convergence on their own. Head-to-head expected value (experiment 2) is a separate, complementary signal: a low-exploitability checkpoint may still lose to specific earlier checkpoints in direct play. Policy-training frequency and final-only extraction (experiments 3 and 4) change the supervised fitting budget and timing for the average-policy network, advantage-network reinitialisation (experiment 5) changes the regret-approximation optimisation path, the fair warm-start ablation (experiment 6) tests checkpoint/resume fidelity, the learning-rate schedule ablation (experiment 7) changes the optimiser trajectory while holding the Deep CFR data-generation protocol fixed, the constrained random search (experiment 8) screens multiple implementation and optimisation choices under a practical compute budget, the target-processing ablation (experiment 9) changes only the supervised advantage-network targets seen during fitting, the replay/averaging ablation (experiment 10) changes only average-policy target weighting by default, the network-size ablation (experiment 11) changes only the policy and advantage MLP architecture, and experiments 12-14 isolate skip connections, layer normalisation, and policy-vs-advantage architecture roles. In the thesis, report exploitability, head-to-head strength, supervised update budget, checkpoint fidelity, optimiser schedule, search-stage uncertainty, target-processing diagnostics, optional replay diagnostics, architecture-size diagnostics, and paired ablation differences as distinct quantities, and treat contrasts between them as empirical results rather than failure modes.

@@ -31,7 +31,7 @@ from open_spiel.python import policy
 from open_spiel.python.algorithms import expected_game_score
 from open_spiel.python.algorithms import exploitability
 
-from .networks import MLP
+from .networks import build_network
 from .replay import AdvantageMemory, ReservoirBuffer, StrategyMemory
 
 
@@ -64,7 +64,14 @@ class DeepCFRSolver(policy.Policy):
 
     Args:
         game: An OpenSpiel game.
+        policy_network_type: Network architecture for the average-policy
+            function approximator. ``"mlp"`` preserves the baseline. Supported
+            opt-in values are ``"residual_mlp"``, ``"layer_norm_mlp"``, and
+            ``"residual_layer_norm_mlp"``.
         policy_network_layers: Hidden layer sizes for the average-policy MLP.
+        advantage_network_type: Network architecture for each advantage
+            function approximator. Uses the same supported values as
+            ``policy_network_type``.
         advantage_network_layers: Hidden layer sizes for each advantage MLP.
         num_iterations: Number of Deep CFR iterations to run.
         num_traversals: Number of external-sampling traversals per iteration
@@ -127,7 +134,9 @@ class DeepCFRSolver(policy.Policy):
     def __init__(
         self,
         game,
+        policy_network_type: str = "mlp",
         policy_network_layers: Sequence[int] = (256, 256),
+        advantage_network_type: str = "mlp",
         advantage_network_layers: Sequence[int] = (128, 128),
         num_iterations: int = 100,
         num_traversals: int = 20,
@@ -179,6 +188,8 @@ class DeepCFRSolver(policy.Policy):
         self._game = game
         self._batch_size_advantage = batch_size_advantage
         self._batch_size_strategy = batch_size_strategy
+        self._policy_network_type = str(policy_network_type).lower()
+        self._advantage_network_type = str(advantage_network_type).lower()
         self._policy_network_train_steps = int(policy_network_train_steps)
         self._policy_network_train_every = int(policy_network_train_every)
         self._evaluation_interval = int(evaluation_interval)
@@ -267,7 +278,8 @@ class DeepCFRSolver(policy.Policy):
 
         # Average-policy network.
         self._strategy_memories = ReservoirBuffer(memory_capacity)
-        self._policy_network = MLP(
+        self._policy_network = build_network(
+            self._policy_network_type,
             self._embedding_size,
             list(policy_network_layers),
             self._num_actions,
@@ -283,7 +295,12 @@ class DeepCFRSolver(policy.Policy):
             ReservoirBuffer(memory_capacity) for _ in range(self._num_players)
         ]
         self._advantage_networks = [
-            MLP(self._embedding_size, list(advantage_network_layers), self._num_actions)
+            build_network(
+                self._advantage_network_type,
+                self._embedding_size,
+                list(advantage_network_layers),
+                self._num_actions,
+            )
             for _ in range(self._num_players)
         ]
         self._loss_advantages = nn.MSELoss(reduction="mean")
@@ -1200,6 +1217,8 @@ class DeepCFRSolver(policy.Policy):
                 "num_players": int(self._num_players),
                 "num_actions": int(self._num_actions),
                 "embedding_size": int(self._embedding_size),
+                "policy_network_type": str(self._policy_network_type),
+                "advantage_network_type": str(self._advantage_network_type),
             },
             "training_state": {
                 "nodes_touched": int(self._nodes_touched),

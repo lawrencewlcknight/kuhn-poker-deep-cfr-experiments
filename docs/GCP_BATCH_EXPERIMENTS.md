@@ -689,6 +689,45 @@ Network-size ablation example:
   "16000"
 ```
 
+Residual-network ablation example:
+
+```bash
+./gcp/submit_batch_experiment.sh \
+  "exp12-residual-network-$(date +%Y%m%d-%H%M%S)" \
+  "python -m experiments.kuhn_poker.deep_cfr_residual_network_ablation.run \
+    --output-root outputs/cloud/exp12-residual-network" \
+  "n2-standard-8" \
+  "172800" \
+  "8000" \
+  "32000"
+```
+
+Layer-normalisation ablation example:
+
+```bash
+./gcp/submit_batch_experiment.sh \
+  "exp13-layer-norm-network-$(date +%Y%m%d-%H%M%S)" \
+  "python -m experiments.kuhn_poker.deep_cfr_layer_norm_network_ablation.run \
+    --output-root outputs/cloud/exp13-layer-norm-network" \
+  "n2-standard-8" \
+  "172800" \
+  "8000" \
+  "32000"
+```
+
+Network-role ablation example:
+
+```bash
+./gcp/submit_batch_experiment.sh \
+  "exp14-network-role-$(date +%Y%m%d-%H%M%S)" \
+  "python -m experiments.kuhn_poker.deep_cfr_network_role_ablation.run \
+    --output-root outputs/cloud/exp14-network-role" \
+  "n2-standard-8" \
+  "172800" \
+  "8000" \
+  "32000"
+```
+
 ---
 
 ## 15. Cleaning up

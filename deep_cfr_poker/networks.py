@@ -81,3 +81,139 @@ class MLP(nn.Module):
     def reset(self) -> None:
         for layer in self.model:
             layer.reset()
+
+
+class LayerNormMLP(nn.Module):
+    """Feed-forward MLP with layer normalisation after each hidden layer."""
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_sizes: Sequence[int],
+        output_size: int,
+        activate_final: bool = False,
+    ) -> None:
+        super().__init__()
+        self.hidden_layers = nn.ModuleList()
+        self.hidden_norms = nn.ModuleList()
+        in_size = int(input_size)
+        for size in hidden_sizes:
+            size = int(size)
+            self.hidden_layers.append(SonnetLinear(in_size=in_size, out_size=size))
+            self.hidden_norms.append(nn.LayerNorm(size))
+            in_size = size
+        self.output_layer = SonnetLinear(
+            in_size=in_size,
+            out_size=int(output_size),
+            activate_relu=bool(activate_final),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for layer, norm in zip(self.hidden_layers, self.hidden_norms):
+            x = norm(layer(x))
+        return self.output_layer(x)
+
+    def reset(self) -> None:
+        for layer in self.hidden_layers:
+            layer.reset()
+        for norm in self.hidden_norms:
+            norm.reset_parameters()
+        self.output_layer.reset()
+
+
+class ResidualHiddenLayer(nn.Module):
+    """One hidden layer with an optional same-width residual connection."""
+
+    def __init__(self, in_size: int, out_size: int, *, layer_norm: bool = False) -> None:
+        super().__init__()
+        self.layer = SonnetLinear(in_size=in_size, out_size=out_size)
+        self.use_residual = int(in_size) == int(out_size)
+        self.norm = nn.LayerNorm(int(out_size)) if layer_norm else None
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        y = self.layer(x)
+        if self.use_residual:
+            y = y + x
+        if self.norm is not None:
+            y = self.norm(y)
+        return y
+
+    def reset(self) -> None:
+        self.layer.reset()
+        if self.norm is not None:
+            self.norm.reset_parameters()
+
+
+class ResidualMLP(nn.Module):
+    """MLP whose hidden layers after the first use same-width skip connections."""
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_sizes: Sequence[int],
+        output_size: int,
+        activate_final: bool = False,
+        layer_norm: bool = False,
+    ) -> None:
+        super().__init__()
+        self.hidden_layers = nn.ModuleList()
+        in_size = int(input_size)
+        for size in hidden_sizes:
+            size = int(size)
+            self.hidden_layers.append(
+                ResidualHiddenLayer(in_size=in_size, out_size=size, layer_norm=layer_norm)
+            )
+            in_size = size
+        self.output_layer = SonnetLinear(
+            in_size=in_size,
+            out_size=int(output_size),
+            activate_relu=bool(activate_final),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for layer in self.hidden_layers:
+            x = layer(x)
+        return self.output_layer(x)
+
+    def reset(self) -> None:
+        for layer in self.hidden_layers:
+            layer.reset()
+        self.output_layer.reset()
+
+
+def build_network(
+    network_type: str,
+    input_size: int,
+    hidden_sizes: Sequence[int],
+    output_size: int,
+    activate_final: bool = False,
+) -> nn.Module:
+    """Constructs a supported MLP variant.
+
+    ``"mlp"`` is the historical baseline and remains the default. The other
+    variants are opt-in so existing experiments keep byte-for-byte equivalent
+    model structure unless their config explicitly requests a new type.
+    """
+    network_type = str(network_type).lower()
+    if network_type == "mlp":
+        return MLP(input_size, hidden_sizes, output_size, activate_final)
+    if network_type == "layer_norm_mlp":
+        return LayerNormMLP(input_size, hidden_sizes, output_size, activate_final)
+    if network_type == "residual_mlp":
+        return ResidualMLP(
+            input_size,
+            hidden_sizes,
+            output_size,
+            activate_final,
+            layer_norm=False,
+        )
+    if network_type == "residual_layer_norm_mlp":
+        return ResidualMLP(
+            input_size,
+            hidden_sizes,
+            output_size,
+            activate_final,
+            layer_norm=True,
+        )
+    valid = ("mlp", "layer_norm_mlp", "residual_mlp", "residual_layer_norm_mlp")
+    raise ValueError(f"Unknown network_type={network_type!r}. Expected one of {valid}.")
