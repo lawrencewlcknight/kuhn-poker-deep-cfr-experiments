@@ -14,7 +14,10 @@ The default run is a 3-by-3 architecture grid:
 
 The baseline arm is `layers2_width32`, matching the Experiment 1 architecture.
 All non-architecture parameters are held fixed at the Experiment 1 values, and
-each variant runs over five matched seeds.
+each variant runs over three matched seeds by default. The three-seed default is
+chosen so the full architecture grid completes inside the 48-hour Batch runtime
+limit; five- and ten-seed seed lists remain available in `config.py` for
+extended confirmation runs.
 
 ## Run
 
@@ -92,4 +95,3 @@ interaction without using nine separate figures. Policy-value error, policy
 loss, entropy, and target variance should be treated as mechanism diagnostics:
 they can explain why an architecture behaves differently, but they are not
 substitutes for exploitability.
-

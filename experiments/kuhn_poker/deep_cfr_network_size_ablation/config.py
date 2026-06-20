@@ -39,9 +39,10 @@ NETWORK_SIZE_VARIANTS = tuple(
 
 BASELINE_VARIANT_ID = "layers2_width32"
 
+DEFAULT_SEEDS_3 = [1234, 2025, 31415]
 DEFAULT_SEEDS_5 = [1234, 2025, 31415, 27182, 16180]
 EXTENDED_SEEDS_10 = [1234, 2025, 31415, 27182, 16180, 4242, 8675309, 7, 99, 1001]
-DEFAULT_SEEDS = DEFAULT_SEEDS_5
+DEFAULT_SEEDS = DEFAULT_SEEDS_3
 
 DEFAULT_CONFIG = {
     "experiment_name": "kuhn_poker_deep_cfr_network_size_ablation",
@@ -67,4 +68,3 @@ DEFAULT_CONFIG = {
     "architecture_variants": NETWORK_SIZE_VARIANTS,
     "baseline_variant_id": BASELINE_VARIANT_ID,
 }
-

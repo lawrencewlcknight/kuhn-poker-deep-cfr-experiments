@@ -41,6 +41,7 @@ from deep_cfr_poker.experiment_utils import (  # noqa: E402
 from .config import (  # noqa: E402
     DEFAULT_CONFIG,
     DEFAULT_SEEDS,
+    DEFAULT_SEEDS_3,
     DEFAULT_SEEDS_5,
     EXTENDED_SEEDS_10,
     NETWORK_DEPTHS,
@@ -465,13 +466,16 @@ def export_ablation_results(
         seeds=seeds,
         completed_seeds=sorted({int(r["seed"]) for r in results}),
         extra={
+            "default_seeds_3": DEFAULT_SEEDS_3,
             "default_seeds_5": DEFAULT_SEEDS_5,
             "extended_seeds_10": EXTENDED_SEEDS_10,
             "experiment_note": (
                 "Controlled network-size ablation anchored to Experiment 1. "
                 "Both policy and advantage networks use the same hidden-layer "
                 "depth and width in each arm; all other solver parameters are "
-                "held fixed. Paired differences are variant minus the 2x32 "
+                "held fixed. The default run uses three matched seeds so the "
+                "full architecture grid completes inside the 48-hour Batch "
+                "runtime limit. Paired differences are variant minus the 2x32 "
                 "Experiment 1 architecture."
             ),
             "aggregate_summary_json": str(aggregate_path),

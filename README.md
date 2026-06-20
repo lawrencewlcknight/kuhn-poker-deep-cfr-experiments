@@ -180,7 +180,7 @@ Compares the Experiment 2 baseline, `uniform_replay_linear_avg_exp2_baseline`, w
 
 [`experiments/kuhn_poker/deep_cfr_network_size_ablation/`](experiments/kuhn_poker/deep_cfr_network_size_ablation/README.md)
 
-Runs a controlled architecture grid anchored to Experiment 1. Both the advantage networks and average-policy network use hidden depths of `2`, `4`, or `8` layers and hidden widths of `8`, `16`, or `32` units, with all other solver parameters fixed. The `layers2_width32` arm is the Experiment 1 architecture and is used as the paired baseline.
+Runs a controlled architecture grid anchored to Experiment 1. Both the advantage networks and average-policy network use hidden depths of `2`, `4`, or `8` layers and hidden widths of `8`, `16`, or `32` units, with all other solver parameters fixed. The `layers2_width32` arm is the Experiment 1 architecture and is used as the paired baseline. The default run uses three matched seeds so that the full grid completes within the 48-hour Batch runtime limit.
 
 **Question:** how sensitive is Deep CFR performance in Kuhn poker to neural-network depth and width when the data-generation budget, optimiser, replay capacity, and average-policy training schedule are held fixed?
 
