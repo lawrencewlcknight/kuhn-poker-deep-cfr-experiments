@@ -144,6 +144,7 @@ def _variant_fields(variant_config: Mapping[str, object]) -> dict:
         "varied_network",
         "architecture_depth",
         "architecture_width",
+        "dropout_probability",
         "policy_architecture_label",
         "advantage_architecture_label",
     ):

@@ -754,9 +754,22 @@ Factorised advantage-head ablation example:
   "32000"
 ```
 
+Dropout ablation example:
+
+```bash
+./gcp/submit_batch_experiment.sh \
+  "exp17-dropout-$(date +%Y%m%d-%H%M%S)" \
+  "python -m experiments.kuhn_poker.deep_cfr_dropout_ablation.run \
+    --output-root outputs/cloud/exp17-dropout" \
+  "n2-standard-8" \
+  "172800" \
+  "8000" \
+  "32000"
+```
+
 ---
 
-## 17. Cleaning up
+## 18. Cleaning up
 
 Batch-created VMs are temporary and should terminate when the job completes or fails. Failed job records can be deleted from Batch if desired:
 

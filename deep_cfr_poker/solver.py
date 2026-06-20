@@ -782,13 +782,18 @@ class DeepCFRSolver(policy.Policy):
         """
         info_state = state.information_state_tensor(player)
         legal_actions = state.legal_actions(player)
+        net = self._advantage_networks[player]
+        was_training = net.training
+        net.eval()
         with torch.no_grad():
-            state_tensor = torch.as_tensor(
-                np.expand_dims(info_state, axis=0), dtype=torch.float32
-            )
-            raw_advantages = (
-                self._advantage_networks[player](state_tensor)[0].cpu().numpy()
-            )
+            try:
+                state_tensor = torch.as_tensor(
+                    np.expand_dims(info_state, axis=0), dtype=torch.float32
+                )
+                raw_advantages = net(state_tensor)[0].cpu().numpy()
+            finally:
+                if was_training:
+                    net.train()
         advantages = [max(0.0, a) for a in raw_advantages]
         cumulative_regret = float(sum(advantages[a] for a in legal_actions))
         matched_regrets = np.zeros(self._num_actions, dtype=np.float32)
@@ -817,12 +822,18 @@ class DeepCFRSolver(policy.Policy):
         )
         if info_state_vector.ndim == 1:
             info_state_vector = np.expand_dims(info_state_vector, axis=0)
+        was_training = self._policy_network.training
+        self._policy_network.eval()
         with torch.no_grad():
-            logits = self._policy_network(
-                torch.as_tensor(info_state_vector, dtype=torch.float32)
-            )[0]
-            legal_logits = logits[legal_actions]
-            legal_probs = self._policy_sm(legal_logits).cpu().numpy()
+            try:
+                logits = self._policy_network(
+                    torch.as_tensor(info_state_vector, dtype=torch.float32)
+                )[0]
+                legal_logits = logits[legal_actions]
+                legal_probs = self._policy_sm(legal_logits).cpu().numpy()
+            finally:
+                if was_training:
+                    self._policy_network.train()
         return {
             int(action): float(prob)
             for action, prob in zip(legal_actions, legal_probs)
@@ -864,13 +875,19 @@ class DeepCFRSolver(policy.Policy):
                 info_state = np.asarray(
                     state.information_state_tensor(player), dtype=np.float32
                 )
+                was_training = self._policy_network.training
+                self._policy_network.eval()
                 with torch.no_grad():
-                    logits = self._policy_network(
-                        torch.as_tensor(
-                            np.expand_dims(info_state, axis=0), dtype=torch.float32
-                        )
-                    )[0]
-                    full_probs = self._policy_sm(logits).cpu().numpy()
+                    try:
+                        logits = self._policy_network(
+                            torch.as_tensor(
+                                np.expand_dims(info_state, axis=0), dtype=torch.float32
+                            )
+                        )[0]
+                        full_probs = self._policy_sm(logits).cpu().numpy()
+                    finally:
+                        if was_training:
+                            self._policy_network.train()
                 legal_mass = float(np.sum(full_probs[legal_actions]))
                 if legal_mass > 0:
                     legal_probs = full_probs[legal_actions] / legal_mass
@@ -1010,6 +1027,7 @@ class DeepCFRSolver(policy.Policy):
         last_loss: Optional[float] = None
         grad_norms: List[float] = []
         buffer = self._advantage_memories[player]
+        self._advantage_networks[player].train()
 
         for _ in range(self._advantage_network_train_steps):
             samples = self._draw_advantage_samples(player, buffer)
@@ -1136,6 +1154,7 @@ class DeepCFRSolver(policy.Policy):
         """One training session for the average-policy network."""
         last_loss: Optional[float] = None
         grad_norms: List[float] = []
+        self._policy_network.train()
 
         for _ in range(self._policy_network_train_steps):
             samples = self._draw_strategy_samples()

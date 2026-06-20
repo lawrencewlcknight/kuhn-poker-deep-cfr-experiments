@@ -121,6 +121,46 @@ class LayerNormMLP(nn.Module):
         self.output_layer.reset()
 
 
+class DropoutMLP(nn.Module):
+    """Feed-forward MLP with dropout after each hidden layer."""
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_sizes: Sequence[int],
+        output_size: int,
+        dropout_probability: float,
+        activate_final: bool = False,
+    ) -> None:
+        super().__init__()
+        self.dropout_probability = float(dropout_probability)
+        if not 0.0 <= self.dropout_probability < 1.0:
+            raise ValueError("dropout_probability must be in [0, 1)")
+        self.hidden_layers = nn.ModuleList()
+        self.dropouts = nn.ModuleList()
+        in_size = int(input_size)
+        for size in hidden_sizes:
+            size = int(size)
+            self.hidden_layers.append(SonnetLinear(in_size=in_size, out_size=size))
+            self.dropouts.append(nn.Dropout(p=self.dropout_probability))
+            in_size = size
+        self.output_layer = SonnetLinear(
+            in_size=in_size,
+            out_size=int(output_size),
+            activate_relu=bool(activate_final),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for layer, dropout in zip(self.hidden_layers, self.dropouts):
+            x = dropout(layer(x))
+        return self.output_layer(x)
+
+    def reset(self) -> None:
+        for layer in self.hidden_layers:
+            layer.reset()
+        self.output_layer.reset()
+
+
 class ResidualHiddenLayer(nn.Module):
     """One hidden layer with an optional same-width residual connection."""
 
@@ -336,6 +376,19 @@ def build_network(
     network_type = str(network_type).lower()
     if network_type == "mlp":
         return MLP(input_size, hidden_sizes, output_size, activate_final)
+    dropout_variants = {
+        "dropout_mlp_p05": 0.05,
+        "dropout_mlp_p10": 0.10,
+        "dropout_mlp_p20": 0.20,
+    }
+    if network_type in dropout_variants:
+        return DropoutMLP(
+            input_size,
+            hidden_sizes,
+            output_size,
+            dropout_variants[network_type],
+            activate_final,
+        )
     if network_type == "layer_norm_mlp":
         return LayerNormMLP(input_size, hidden_sizes, output_size, activate_final)
     if network_type == "residual_mlp":
@@ -370,6 +423,9 @@ def build_network(
         )
     valid = (
         "mlp",
+        "dropout_mlp_p05",
+        "dropout_mlp_p10",
+        "dropout_mlp_p20",
         "layer_norm_mlp",
         "residual_mlp",
         "residual_layer_norm_mlp",

@@ -18,6 +18,9 @@ from experiments.kuhn_poker.architecture_ablation_common import (
 from experiments.kuhn_poker.deep_cfr_layer_norm_network_ablation.config import (
     ARCHITECTURE_VARIANTS as LAYER_NORM_VARIANTS,
 )
+from experiments.kuhn_poker.deep_cfr_dropout_ablation.config import (
+    ARCHITECTURE_VARIANTS as DROPOUT_VARIANTS,
+)
 from experiments.kuhn_poker.deep_cfr_factorised_advantage_head_ablation.config import (
     ARCHITECTURE_VARIANTS as FACTORISED_HEAD_VARIANTS,
 )
@@ -85,6 +88,11 @@ BASE_SMOKE_CONFIG = {
             "factorised_head",
             FACTORISED_HEAD_VARIANTS[:3],
             "direct_advantage_layers2_width32",
+        ),
+        (
+            "dropout",
+            DROPOUT_VARIANTS[:2],
+            "dropout_p00_advantage_layers2_width32",
         ),
     ],
 )

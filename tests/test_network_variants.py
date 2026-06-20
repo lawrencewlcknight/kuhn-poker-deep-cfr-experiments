@@ -14,6 +14,9 @@ from deep_cfr_poker.networks import build_network, build_shared_trunk_player_hea
     "network_type",
     [
         "mlp",
+        "dropout_mlp_p05",
+        "dropout_mlp_p10",
+        "dropout_mlp_p20",
         "residual_mlp",
         "layer_norm_mlp",
         "residual_layer_norm_mlp",
@@ -52,6 +55,26 @@ def test_factorised_advantage_heads_center_action_terms(network_type):
         assert torch.allclose(y.mean(dim=-1), torch.zeros(4), atol=1e-6)
     else:
         assert centred.shape == (4, 3)
+
+
+def test_dropout_mlp_disables_dropout_in_eval_mode():
+    net = build_network(
+        "dropout_mlp_p20",
+        input_size=6,
+        hidden_sizes=(8, 8),
+        output_size=3,
+    )
+    x = torch.randn(4, 6)
+
+    net.eval()
+    y_eval_1 = net(x)
+    y_eval_2 = net(x)
+    assert torch.allclose(y_eval_1, y_eval_2)
+
+    net.train()
+    y_train_1 = net(x)
+    y_train_2 = net(x)
+    assert not torch.allclose(y_train_1, y_train_2)
 
 
 def test_unknown_network_type_is_rejected():
