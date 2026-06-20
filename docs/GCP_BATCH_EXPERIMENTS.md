@@ -728,9 +728,22 @@ Network-role ablation example:
   "32000"
 ```
 
+Shared-trunk head ablation example:
+
+```bash
+./gcp/submit_batch_experiment.sh \
+  "exp15-shared-trunk-head-$(date +%Y%m%d-%H%M%S)" \
+  "python -m experiments.kuhn_poker.deep_cfr_shared_trunk_head_ablation.run \
+    --output-root outputs/cloud/exp15-shared-trunk-head" \
+  "n2-standard-8" \
+  "172800" \
+  "8000" \
+  "32000"
+```
+
 ---
 
-## 15. Cleaning up
+## 16. Cleaning up
 
 Batch-created VMs are temporary and should terminate when the job completes or fails. Failed job records can be deleted from Batch if desired:
 

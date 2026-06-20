@@ -181,6 +181,65 @@ class ResidualMLP(nn.Module):
         self.output_layer.reset()
 
 
+class SharedTrunk(nn.Module):
+    """Shared hidden representation used by per-player output heads."""
+
+    def __init__(self, input_size: int, hidden_sizes: Sequence[int]) -> None:
+        super().__init__()
+        if not hidden_sizes:
+            raise ValueError("SharedTrunk requires at least one hidden layer")
+        self.layers = nn.ModuleList()
+        in_size = int(input_size)
+        for size in hidden_sizes:
+            size = int(size)
+            self.layers.append(SonnetLinear(in_size=in_size, out_size=size))
+            in_size = size
+        self.output_size = in_size
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for layer in self.layers:
+            x = layer(x)
+        return x
+
+    def reset(self) -> None:
+        for layer in self.layers:
+            layer.reset()
+
+
+class PlayerActionHead(nn.Module):
+    """Per-player action head backed by a shared representation trunk."""
+
+    def __init__(self, trunk: SharedTrunk, output_size: int) -> None:
+        super().__init__()
+        self.trunk = trunk
+        self.head = SonnetLinear(
+            in_size=trunk.output_size,
+            out_size=int(output_size),
+            activate_relu=False,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        return self.head(self.trunk(x))
+
+    def reset(self) -> None:
+        self.trunk.reset()
+        self.head.reset()
+
+    def reset_head(self) -> None:
+        self.head.reset()
+
+
+def build_shared_trunk_player_heads(
+    input_size: int,
+    hidden_sizes: Sequence[int],
+    output_size: int,
+    num_players: int,
+) -> list[PlayerActionHead]:
+    """Builds one shared trunk with a distinct action-output head per player."""
+    trunk = SharedTrunk(input_size=input_size, hidden_sizes=hidden_sizes)
+    return [PlayerActionHead(trunk, output_size) for _ in range(int(num_players))]
+
+
 def build_network(
     network_type: str,
     input_size: int,
@@ -215,5 +274,10 @@ def build_network(
             activate_final,
             layer_norm=True,
         )
-    valid = ("mlp", "layer_norm_mlp", "residual_mlp", "residual_layer_norm_mlp")
+    valid = (
+        "mlp",
+        "layer_norm_mlp",
+        "residual_mlp",
+        "residual_layer_norm_mlp",
+    )
     raise ValueError(f"Unknown network_type={network_type!r}. Expected one of {valid}.")

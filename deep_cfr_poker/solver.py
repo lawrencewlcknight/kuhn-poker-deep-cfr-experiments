@@ -31,7 +31,7 @@ from open_spiel.python import policy
 from open_spiel.python.algorithms import expected_game_score
 from open_spiel.python.algorithms import exploitability
 
-from .networks import build_network
+from .networks import build_network, build_shared_trunk_player_heads
 from .replay import AdvantageMemory, ReservoirBuffer, StrategyMemory
 
 
@@ -71,7 +71,9 @@ class DeepCFRSolver(policy.Policy):
         policy_network_layers: Hidden layer sizes for the average-policy MLP.
         advantage_network_type: Network architecture for each advantage
             function approximator. Uses the same supported values as
-            ``policy_network_type``.
+            ``policy_network_type``. The additional value
+            ``"shared_trunk_player_heads"`` uses one shared advantage trunk
+            with a separate action-output head for each player.
         advantage_network_layers: Hidden layer sizes for each advantage MLP.
         num_iterations: Number of Deep CFR iterations to run.
         num_traversals: Number of external-sampling traversals per iteration
@@ -190,6 +192,9 @@ class DeepCFRSolver(policy.Policy):
         self._batch_size_strategy = batch_size_strategy
         self._policy_network_type = str(policy_network_type).lower()
         self._advantage_network_type = str(advantage_network_type).lower()
+        self._uses_shared_advantage_trunk = (
+            self._advantage_network_type == "shared_trunk_player_heads"
+        )
         self._policy_network_train_steps = int(policy_network_train_steps)
         self._policy_network_train_every = int(policy_network_train_every)
         self._evaluation_interval = int(evaluation_interval)
@@ -294,20 +299,25 @@ class DeepCFRSolver(policy.Policy):
         self._advantage_memories = [
             ReservoirBuffer(memory_capacity) for _ in range(self._num_players)
         ]
-        self._advantage_networks = [
-            build_network(
-                self._advantage_network_type,
+        if self._uses_shared_advantage_trunk:
+            self._advantage_networks = build_shared_trunk_player_heads(
                 self._embedding_size,
                 list(advantage_network_layers),
                 self._num_actions,
+                self._num_players,
             )
-            for _ in range(self._num_players)
-        ]
+        else:
+            self._advantage_networks = [
+                build_network(
+                    self._advantage_network_type,
+                    self._embedding_size,
+                    list(advantage_network_layers),
+                    self._num_actions,
+                )
+                for _ in range(self._num_players)
+            ]
         self._loss_advantages = nn.MSELoss(reduction="mean")
-        self._optimizer_advantages = [
-            torch.optim.Adam(net.parameters(), lr=self._learning_rate)
-            for net in self._advantage_networks
-        ]
+        self._optimizer_advantages = self._make_advantage_optimizers()
 
         # Diagnostics.
         self._nodes_touched = 0
@@ -355,13 +365,42 @@ class DeepCFRSolver(policy.Policy):
 
     def reinitialize_advantage_network(self, player: int) -> None:
         self._advantage_networks[player].reset()
-        self._optimizer_advantages[player] = torch.optim.Adam(
-            self._advantage_networks[player].parameters(), lr=self._learning_rate
-        )
+        self._optimizer_advantages = self._make_advantage_optimizers()
 
     def reinitialize_advantage_networks(self) -> None:
-        for p in range(self._num_players):
-            self.reinitialize_advantage_network(p)
+        if self._uses_shared_advantage_trunk:
+            self._advantage_networks[0].trunk.reset()
+            for net in self._advantage_networks:
+                if hasattr(net, "reset_head"):
+                    net.reset_head()
+                else:
+                    net.reset()
+        else:
+            for net in self._advantage_networks:
+                net.reset()
+        self._optimizer_advantages = self._make_advantage_optimizers()
+
+    def _unique_advantage_parameters(self) -> List[torch.nn.Parameter]:
+        seen = set()
+        params = []
+        for net in self._advantage_networks:
+            for parameter in net.parameters():
+                ident = id(parameter)
+                if ident not in seen:
+                    seen.add(ident)
+                    params.append(parameter)
+        return params
+
+    def _make_advantage_optimizers(self):
+        if self._uses_shared_advantage_trunk:
+            shared_optimizer = torch.optim.Adam(
+                self._unique_advantage_parameters(), lr=self._learning_rate
+            )
+            return [shared_optimizer for _ in range(self._num_players)]
+        return [
+            torch.optim.Adam(net.parameters(), lr=self._learning_rate)
+            for net in self._advantage_networks
+        ]
 
     def _learning_rate_at_iteration(self, iteration: int) -> float:
         """Returns the learning rate for a one-indexed CFR iteration."""
@@ -454,11 +493,19 @@ class DeepCFRSolver(policy.Policy):
             self.learning_rate_history.append(float(current_lr))
 
             # Collect samples and train each advantage network.
+            if (
+                self._reinitialize_advantage_networks
+                and self._uses_shared_advantage_trunk
+            ):
+                self.reinitialize_advantage_networks()
             for p in range(self._num_players):
                 for _ in range(self._num_traversals):
                     self._traverse_game_tree(self._root_node, p)
 
-                if self._reinitialize_advantage_networks:
+                if (
+                    self._reinitialize_advantage_networks
+                    and not self._uses_shared_advantage_trunk
+                ):
                     self.reinitialize_advantage_network(p)
 
                 advantage_losses[p].append(self._learn_advantage_network(p))

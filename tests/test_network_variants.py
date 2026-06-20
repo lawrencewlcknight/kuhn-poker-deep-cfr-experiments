@@ -7,7 +7,7 @@ import pytest
 pytest.importorskip("pyspiel")
 torch = pytest.importorskip("torch")
 
-from deep_cfr_poker.networks import build_network
+from deep_cfr_poker.networks import build_network, build_shared_trunk_player_heads
 
 
 @pytest.mark.parametrize(
@@ -32,3 +32,24 @@ def test_network_variants_forward_and_reset(network_type):
 def test_unknown_network_type_is_rejected():
     with pytest.raises(ValueError, match="Unknown network_type"):
         build_network("not_a_network", 6, (8, 8), 3)
+
+
+def test_shared_trunk_player_heads_share_trunk_and_reset():
+    heads = build_shared_trunk_player_heads(
+        input_size=6,
+        hidden_sizes=(8, 8),
+        output_size=3,
+        num_players=2,
+    )
+
+    assert len(heads) == 2
+    assert heads[0].trunk is heads[1].trunk
+
+    x = torch.randn(4, 6)
+    assert heads[0](x).shape == (4, 3)
+    assert heads[1](x).shape == (4, 3)
+
+    heads[0].trunk.reset()
+    heads[0].reset_head()
+    heads[1].reset_head()
+    assert heads[0](x).shape == (4, 3)

@@ -24,6 +24,9 @@ from experiments.kuhn_poker.deep_cfr_network_role_ablation.config import (
 from experiments.kuhn_poker.deep_cfr_residual_network_ablation.config import (
     ARCHITECTURE_VARIANTS as RESIDUAL_VARIANTS,
 )
+from experiments.kuhn_poker.deep_cfr_shared_trunk_head_ablation.config import (
+    ARCHITECTURE_VARIANTS as SHARED_TRUNK_VARIANTS,
+)
 
 
 BASE_SMOKE_CONFIG = {
@@ -69,6 +72,11 @@ BASE_SMOKE_CONFIG = {
             "role",
             ROLE_VARIANTS[:3],
             "baseline_policy2x32_advantage2x32",
+        ),
+        (
+            "shared_trunk",
+            SHARED_TRUNK_VARIANTS[:2],
+            "independent_advantage_layers2_width32",
         ),
     ],
 )
@@ -119,4 +127,3 @@ def test_architecture_ablation_writes_expected_artifacts(
     curve_header = info["curve_csv"].read_text(encoding="utf-8").splitlines()[0]
     assert "policy_network_type" in curve_header
     assert "advantage_network_type" in curve_header
-
