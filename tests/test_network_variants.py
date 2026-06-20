@@ -12,7 +12,14 @@ from deep_cfr_poker.networks import build_network, build_shared_trunk_player_hea
 
 @pytest.mark.parametrize(
     "network_type",
-    ["mlp", "residual_mlp", "layer_norm_mlp", "residual_layer_norm_mlp"],
+    [
+        "mlp",
+        "residual_mlp",
+        "layer_norm_mlp",
+        "residual_layer_norm_mlp",
+        "centered_advantage_mlp",
+        "dueling_mlp",
+    ],
 )
 def test_network_variants_forward_and_reset(network_type):
     net = build_network(
@@ -27,6 +34,24 @@ def test_network_variants_forward_and_reset(network_type):
     net.reset()
     y_after_reset = net(x)
     assert y_after_reset.shape == (4, 3)
+
+
+@pytest.mark.parametrize("network_type", ["centered_advantage_mlp", "dueling_mlp"])
+def test_factorised_advantage_heads_center_action_terms(network_type):
+    net = build_network(
+        network_type,
+        input_size=6,
+        hidden_sizes=(8, 8),
+        output_size=3,
+    )
+    x = torch.randn(4, 6)
+    y = net(x)
+    centred = y - y.mean(dim=-1, keepdim=True)
+
+    if network_type == "centered_advantage_mlp":
+        assert torch.allclose(y.mean(dim=-1), torch.zeros(4), atol=1e-6)
+    else:
+        assert centred.shape == (4, 3)
 
 
 def test_unknown_network_type_is_rejected():

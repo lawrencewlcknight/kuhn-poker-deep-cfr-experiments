@@ -741,9 +741,22 @@ Shared-trunk head ablation example:
   "32000"
 ```
 
+Factorised advantage-head ablation example:
+
+```bash
+./gcp/submit_batch_experiment.sh \
+  "exp16-factorised-advantage-head-$(date +%Y%m%d-%H%M%S)" \
+  "python -m experiments.kuhn_poker.deep_cfr_factorised_advantage_head_ablation.run \
+    --output-root outputs/cloud/exp16-factorised-advantage-head" \
+  "n2-standard-8" \
+  "172800" \
+  "8000" \
+  "32000"
+```
+
 ---
 
-## 16. Cleaning up
+## 17. Cleaning up
 
 Batch-created VMs are temporary and should terminate when the job completes or fails. Failed job records can be deleted from Batch if desired:
 

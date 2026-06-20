@@ -90,7 +90,11 @@ The repository is organised so that each experiment can be run independently whi
 │       │   ├── config.py
 │       │   ├── run.py
 │       │   └── README.md
-│       └── deep_cfr_shared_trunk_head_ablation/     # Experiment 15
+│       ├── deep_cfr_shared_trunk_head_ablation/     # Experiment 15
+│       │   ├── config.py
+│       │   ├── run.py
+│       │   └── README.md
+│       └── deep_cfr_factorised_advantage_head_ablation/ # Experiment 16
 │           ├── config.py
 │           ├── run.py
 │           └── README.md
@@ -232,6 +236,14 @@ Varies policy-network capacity and advantage-network capacity separately. The ba
 Holds the average-policy network fixed at the Experiment 1 `2x32` MLP architecture and compares independent per-player advantage MLPs with a shared advantage trunk and separate player/action heads. The comparison is run at hidden depths `2`, `4`, and `8`, all at width `32`.
 
 **Question:** can shared representations across player-specific advantage approximators improve sample efficiency or optimisation stability without weakening the per-player action-value heads?
+
+### 16. Kuhn poker Deep CFR factorised advantage-head ablation
+
+[`experiments/kuhn_poker/deep_cfr_factorised_advantage_head_ablation/`](experiments/kuhn_poker/deep_cfr_factorised_advantage_head_ablation/README.md)
+
+Holds the average-policy network fixed at the Experiment 1 `2x32` MLP architecture and compares direct action outputs with centred action-advantage outputs and dueling-style state-value-plus-action-advantage outputs. The comparison is run at hidden depths `2`, `4`, and `8`, all at width `32`.
+
+**Question:** does imposing a value/advantage factorisation on the advantage approximator improve Deep CFR optimisation stability or final average-policy quality?
 
 ## Setup
 
@@ -495,6 +507,24 @@ python -m experiments.kuhn_poker.deep_cfr_shared_trunk_head_ablation.run \
   --evaluation-interval 1 \
   --policy-network-train-every 1 \
   --variant-ids independent_advantage_layers2_width32,shared_trunk_advantage_layers2_width32 \
+  --policy-network-train-steps 1 \
+  --advantage-network-train-steps 1 \
+  --batch-size-advantage 2 \
+  --batch-size-strategy 2 \
+  --memory-capacity 256 \
+  --output-root outputs/smoke_tests
+
+# Experiment 16 — factorised advantage-head ablation
+python -m experiments.kuhn_poker.deep_cfr_factorised_advantage_head_ablation.run
+
+# Experiment 16 — quick smoke test
+python -m experiments.kuhn_poker.deep_cfr_factorised_advantage_head_ablation.run \
+  --seeds 1234 \
+  --iterations 3 \
+  --traversals 4 \
+  --evaluation-interval 1 \
+  --policy-network-train-every 1 \
+  --variant-ids direct_advantage_layers2_width32,centered_advantage_layers2_width32,dueling_advantage_layers2_width32 \
   --policy-network-train-steps 1 \
   --advantage-network-train-steps 1 \
   --batch-size-advantage 2 \

@@ -18,6 +18,9 @@ from experiments.kuhn_poker.architecture_ablation_common import (
 from experiments.kuhn_poker.deep_cfr_layer_norm_network_ablation.config import (
     ARCHITECTURE_VARIANTS as LAYER_NORM_VARIANTS,
 )
+from experiments.kuhn_poker.deep_cfr_factorised_advantage_head_ablation.config import (
+    ARCHITECTURE_VARIANTS as FACTORISED_HEAD_VARIANTS,
+)
 from experiments.kuhn_poker.deep_cfr_network_role_ablation.config import (
     ARCHITECTURE_VARIANTS as ROLE_VARIANTS,
 )
@@ -77,6 +80,11 @@ BASE_SMOKE_CONFIG = {
             "shared_trunk",
             SHARED_TRUNK_VARIANTS[:2],
             "independent_advantage_layers2_width32",
+        ),
+        (
+            "factorised_head",
+            FACTORISED_HEAD_VARIANTS[:3],
+            "direct_advantage_layers2_width32",
         ),
     ],
 )

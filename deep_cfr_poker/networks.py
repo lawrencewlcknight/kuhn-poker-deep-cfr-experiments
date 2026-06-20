@@ -181,6 +181,86 @@ class ResidualMLP(nn.Module):
         self.output_layer.reset()
 
 
+class CenteredAdvantageMLP(nn.Module):
+    """MLP head whose action outputs are centred to zero mean per state."""
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_sizes: Sequence[int],
+        output_size: int,
+        activate_final: bool = False,
+    ) -> None:
+        super().__init__()
+        del activate_final
+        self.hidden_layers = nn.ModuleList()
+        in_size = int(input_size)
+        for size in hidden_sizes:
+            size = int(size)
+            self.hidden_layers.append(SonnetLinear(in_size=in_size, out_size=size))
+            in_size = size
+        self.action_head = SonnetLinear(
+            in_size=in_size,
+            out_size=int(output_size),
+            activate_relu=False,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for layer in self.hidden_layers:
+            x = layer(x)
+        raw_advantages = self.action_head(x)
+        return raw_advantages - raw_advantages.mean(dim=-1, keepdim=True)
+
+    def reset(self) -> None:
+        for layer in self.hidden_layers:
+            layer.reset()
+        self.action_head.reset()
+
+
+class DuelingMLP(nn.Module):
+    """MLP with a scalar state head plus centred action-advantage head."""
+
+    def __init__(
+        self,
+        input_size: int,
+        hidden_sizes: Sequence[int],
+        output_size: int,
+        activate_final: bool = False,
+    ) -> None:
+        super().__init__()
+        del activate_final
+        self.hidden_layers = nn.ModuleList()
+        in_size = int(input_size)
+        for size in hidden_sizes:
+            size = int(size)
+            self.hidden_layers.append(SonnetLinear(in_size=in_size, out_size=size))
+            in_size = size
+        self.value_head = SonnetLinear(
+            in_size=in_size,
+            out_size=1,
+            activate_relu=False,
+        )
+        self.action_head = SonnetLinear(
+            in_size=in_size,
+            out_size=int(output_size),
+            activate_relu=False,
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        for layer in self.hidden_layers:
+            x = layer(x)
+        state_value = self.value_head(x)
+        raw_advantages = self.action_head(x)
+        centred_advantages = raw_advantages - raw_advantages.mean(dim=-1, keepdim=True)
+        return state_value + centred_advantages
+
+    def reset(self) -> None:
+        for layer in self.hidden_layers:
+            layer.reset()
+        self.value_head.reset()
+        self.action_head.reset()
+
+
 class SharedTrunk(nn.Module):
     """Shared hidden representation used by per-player output heads."""
 
@@ -249,7 +329,7 @@ def build_network(
 ) -> nn.Module:
     """Constructs a supported MLP variant.
 
-    ``"mlp"`` is the historical baseline and remains the default. The other
+    ``"mlp"`` is the historical baseline and remains the default. Other
     variants are opt-in so existing experiments keep byte-for-byte equivalent
     model structure unless their config explicitly requests a new type.
     """
@@ -274,10 +354,26 @@ def build_network(
             activate_final,
             layer_norm=True,
         )
+    if network_type == "centered_advantage_mlp":
+        return CenteredAdvantageMLP(
+            input_size,
+            hidden_sizes,
+            output_size,
+            activate_final,
+        )
+    if network_type == "dueling_mlp":
+        return DuelingMLP(
+            input_size,
+            hidden_sizes,
+            output_size,
+            activate_final,
+        )
     valid = (
         "mlp",
         "layer_norm_mlp",
         "residual_mlp",
         "residual_layer_norm_mlp",
+        "centered_advantage_mlp",
+        "dueling_mlp",
     )
     raise ValueError(f"Unknown network_type={network_type!r}. Expected one of {valid}.")
