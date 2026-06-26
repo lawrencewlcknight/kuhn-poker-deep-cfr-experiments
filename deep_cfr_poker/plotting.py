@@ -23,6 +23,7 @@ from .constants import (
     DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
     DEFAULT_EXPLOITABILITY_THRESHOLD,
 )
+from .chart_titles import set_chart_title
 
 
 def _pad_to_length(arr: np.ndarray, length: int) -> np.ndarray:
@@ -63,6 +64,8 @@ def plot_multiseed_results(
     run_dir,
     exploitability_threshold: float = DEFAULT_EXPLOITABILITY_THRESHOLD,
     average_policy_value_target: float = DEFAULT_AVERAGE_POLICY_VALUE_TARGET,
+    algorithm_variant: object = "Deep CFR",
+    poker_variant: object = "kuhn_poker",
 ) -> None:
     """Creates the standard plots for a multi-seed Kuhn poker Deep CFR run."""
     if not results:
@@ -114,7 +117,12 @@ def plot_multiseed_results(
     ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Training iteration")
     ax.set_ylabel("Exploitability (NashConv/2)")
-    ax.set_title("Kuhn Poker Deep CFR: Exploitability Across Seeds")
+    set_chart_title(
+        ax,
+        "Kuhn Poker Deep CFR: Exploitability Across Seeds",
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True)
     ax.legend()
     fig.tight_layout()
@@ -145,7 +153,12 @@ def plot_multiseed_results(
     ax.axhline(0.0, linestyle="--", label="Nash equilibrium target")
     ax.set_xlabel("Nodes touched")
     ax.set_ylabel("Exploitability (NashConv/2)")
-    ax.set_title("Kuhn Poker Deep CFR: Exploitability by Nodes Touched")
+    set_chart_title(
+        ax,
+        "Kuhn Poker Deep CFR: Exploitability by Nodes Touched",
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True)
     ax.legend()
     fig.tight_layout()
@@ -178,7 +191,12 @@ def plot_multiseed_results(
     )
     ax.set_xlabel("Training iteration")
     ax.set_ylabel("Average policy value for player 0")
-    ax.set_title("Kuhn Poker Deep CFR: Average Policy Value Across Seeds")
+    set_chart_title(
+        ax,
+        "Kuhn Poker Deep CFR: Average Policy Value Across Seeds",
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True)
     ax.legend()
     fig.tight_layout()
@@ -213,7 +231,12 @@ def plot_multiseed_results(
     )
     ax.set_xlabel("Nodes touched")
     ax.set_ylabel("Average policy value for player 0")
-    ax.set_title("Kuhn Poker Deep CFR: Average Policy Value by Nodes Touched")
+    set_chart_title(
+        ax,
+        "Kuhn Poker Deep CFR: Average Policy Value by Nodes Touched",
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True)
     ax.legend()
     fig.tight_layout()
@@ -243,7 +266,12 @@ def plot_multiseed_results(
     )
     ax.set_xlabel("Training iteration")
     ax.set_ylabel(r"$|v(\sigma) - (-1/18)|$")
-    ax.set_title("Kuhn Poker Deep CFR: Policy-Value Error")
+    set_chart_title(
+        ax,
+        "Kuhn Poker Deep CFR: Policy-Value Error",
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True)
     ax.legend()
     fig.tight_layout()
@@ -252,11 +280,21 @@ def plot_multiseed_results(
     )
     plt.close(fig)
 
-    plot_diagnostics(results, run_dir, iterations=iterations)
+    plot_diagnostics(
+        results,
+        run_dir,
+        iterations=iterations,
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
 
 
 def plot_diagnostics(
-    results: Sequence[dict], run_dir, iterations: np.ndarray = None
+    results: Sequence[dict],
+    run_dir,
+    iterations: np.ndarray = None,
+    algorithm_variant: object = "Deep CFR",
+    poker_variant: object = "kuhn_poker",
 ) -> None:
     """Creates neural-network and policy-distribution diagnostic plots."""
     run_dir = Path(run_dir)
@@ -293,7 +331,12 @@ def plot_diagnostics(
     )
     ax.set_xlabel("Training iteration")
     ax.set_ylabel("MSE loss")
-    ax.set_title("Average-Policy Network Loss Diagnostic")
+    set_chart_title(
+        ax,
+        "Average-Policy Network Loss Diagnostic",
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True)
     ax.legend()
     fig.tight_layout()
@@ -304,7 +347,12 @@ def plot_diagnostics(
     ax.plot(iterations, np.nanmean(adv_target_var_mat, axis=0), linewidth=2)
     ax.set_xlabel("Training iteration")
     ax.set_ylabel("Advantage target variance")
-    ax.set_title("Advantage-Target Variance Diagnostic")
+    set_chart_title(
+        ax,
+        "Advantage-Target Variance Diagnostic",
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True)
     fig.tight_layout()
     fig.savefig(
@@ -329,7 +377,12 @@ def plot_diagnostics(
     )
     ax.set_xlabel("Training iteration")
     ax.set_ylabel("Diagnostic value")
-    ax.set_title("Policy Distribution Diagnostics")
+    set_chart_title(
+        ax,
+        "Policy Distribution Diagnostics",
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True)
     ax.legend()
     fig.tight_layout()
@@ -360,6 +413,8 @@ def plot_pairwise_heatmap(
     fmt: str = ".3f",
     annotate: bool = True,
     figsize: Sequence[float] = (9, 7),
+    algorithm_variant: object = "Deep CFR",
+    poker_variant: object = "kuhn_poker",
 ) -> None:
     """Renders a labelled heatmap with optional cell annotations.
 
@@ -384,7 +439,12 @@ def plot_pairwise_heatmap(
     ax.set_yticklabels(list(row_labels))
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
+    set_chart_title(
+        ax,
+        title,
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     plt.setp(
         ax.get_xticklabels(),
         rotation=45,
@@ -422,6 +482,8 @@ def plot_strength_curve_with_errorbars(
     reference_line_value: float = 0.0,
     reference_line_label: Optional[str] = None,
     figsize: Sequence[float] = (9, 5),
+    algorithm_variant: object = "Deep CFR",
+    poker_variant: object = "kuhn_poker",
 ) -> None:
     """Generic mean-with-error-bar plot used for cross-seed strength summaries."""
     x = np.asarray(list(x), dtype=float)
@@ -439,7 +501,12 @@ def plot_strength_curve_with_errorbars(
         )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
+    set_chart_title(
+        ax,
+        title,
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True, alpha=0.3)
     if reference_line_label:
         ax.legend()
@@ -461,6 +528,8 @@ def plot_scatter_annotated(
     x_reference_line_value: Optional[float] = None,
     x_reference_line_label: Optional[str] = None,
     figsize: Sequence[float] = (7, 5),
+    algorithm_variant: object = "Deep CFR",
+    poker_variant: object = "kuhn_poker",
 ) -> None:
     """Annotated scatter plot used for strength-vs-exploitability views."""
     xs = np.asarray(list(xs), dtype=float)
@@ -481,7 +550,12 @@ def plot_scatter_annotated(
         )
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    ax.set_title(title)
+    set_chart_title(
+        ax,
+        title,
+        algorithm_variant=algorithm_variant,
+        poker_variant=poker_variant,
+    )
     ax.grid(True, alpha=0.3)
     if x_reference_line_label:
         ax.legend()

@@ -41,6 +41,7 @@ from deep_cfr_poker.experiment_utils import (  # noqa: E402
     write_experiment_metadata,
     write_failed_seeds,
 )
+from deep_cfr_poker.chart_titles import set_chart_title  # noqa: E402
 
 
 def parse_seeds(seed_string: Optional[str], default_seeds: Sequence[int]) -> list[int]:
@@ -508,6 +509,8 @@ def plot_architecture_ablation(
     aggregate_by_variant: dict,
     paired_rows: Sequence[dict],
     title_prefix: str,
+    algorithm_variant: object = "Deep CFR",
+    poker_variant: object = "kuhn_poker",
 ) -> None:
     if not results:
         raise ValueError("No results to plot.")
@@ -571,7 +574,12 @@ def plot_architecture_ablation(
             )
         ax.set_xlabel(x_key.replace("_", " ").title())
         ax.set_ylabel(ylabel)
-        ax.set_title(f"{title_prefix}: {suffix}")
+        set_chart_title(
+            ax,
+            f"{title_prefix}: {suffix}",
+            algorithm_variant=algorithm_variant,
+            poker_variant=poker_variant,
+        )
         ax.grid(True)
         ax.legend(ncol=2, fontsize=8)
         fig.tight_layout()
@@ -615,7 +623,12 @@ def plot_architecture_ablation(
         ax.set_xticks(x_pos)
         ax.set_xticklabels([labels[v] for v in variant_ids], rotation=25, ha="right")
         ax.set_ylabel(ylabel)
-        ax.set_title(f"{title_prefix}: {title}")
+        set_chart_title(
+            ax,
+            f"{title_prefix}: {title}",
+            algorithm_variant=algorithm_variant,
+            poker_variant=poker_variant,
+        )
         ax.grid(True, axis="y")
         for i, value in enumerate(means):
             if np.isfinite(value):
@@ -653,7 +666,12 @@ def plot_architecture_ablation(
         ax.set_xticks(np.arange(len(comparison_variants)))
         ax.set_xticklabels([labels.get(v, v) for v in comparison_variants], rotation=25, ha="right")
         ax.set_ylabel(f"Delta final exploitability vs {baseline_variant_id}")
-        ax.set_title(f"{title_prefix}: Paired Differences Across Seeds")
+        set_chart_title(
+            ax,
+            f"{title_prefix}: Paired Differences Across Seeds",
+            algorithm_variant=algorithm_variant,
+            poker_variant=poker_variant,
+        )
         ax.grid(True, axis="y")
         fig.tight_layout()
         fig.savefig(run_dir / "paired_deltas_vs_baseline.png", dpi=200, bbox_inches="tight")
@@ -690,7 +708,12 @@ def plot_architecture_ablation(
             ax.fill_between(iterations, mean - se, mean + se, alpha=0.12, color=color)
         ax.set_xlabel("Training iteration")
         ax.set_ylabel(ylabel)
-        ax.set_title(f"{title_prefix}: {title}")
+        set_chart_title(
+            ax,
+            f"{title_prefix}: {title}",
+            algorithm_variant=algorithm_variant,
+            poker_variant=poker_variant,
+        )
         ax.grid(True)
         ax.legend(ncol=2, fontsize=8)
         fig.tight_layout()
@@ -815,6 +838,8 @@ def main_from_config(
         aggregate_by_variant=export_info["aggregate_by_variant"],
         paired_rows=export_info["paired_rows"],
         title_prefix=plot_title_prefix,
+        algorithm_variant=config.get("algorithm_variant", "Deep CFR"),
+        poker_variant=config.get("poker_variant", config.get("game_name", "kuhn_poker")),
     )
 
     logger.info(
